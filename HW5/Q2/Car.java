@@ -1,3 +1,6 @@
+package HW5.Q2;
+
+
 public class Car extends Vehicle {
     
     public Car(String model) {

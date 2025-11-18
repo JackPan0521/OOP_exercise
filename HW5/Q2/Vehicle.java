@@ -1,3 +1,5 @@
+package HW5.Q2;
+
 public class Vehicle {
     protected String model;
     
