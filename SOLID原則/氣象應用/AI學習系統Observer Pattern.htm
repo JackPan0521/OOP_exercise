@@ -1,0 +1,1263 @@
+
+<!-- saved from url=(0042)http://120.125.80.92:8088/task_answer_test -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link href="./AI學習系統Observer Pattern_files/jquerysctipttop.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="./AI學習系統Observer Pattern_files/bootstrap.min.css">
+	<link rel="stylesheet" href="./AI學習系統Observer Pattern_files/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <link rel="stylesheet" href="./AI學習系統Observer Pattern_files/jquery.scrollbar.min.css">
+
+	<script src="./AI學習系統Observer Pattern_files/jquery-1.12.4.min.js.下載" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+	<script src="./AI學習系統Observer Pattern_files/bootstrap.min.js.下載"></script>
+    <script src="./AI學習系統Observer Pattern_files/jquery.scrollbar.min.js.下載"></script>
+<style>
+.right { 
+ color: green;   
+}
+.wrong {
+ color: red;   
+}
+#code {
+   overflow: auto;
+   }
+   * {
+  box-sizing: border-box;
+}
+
+/* Create two equal columns that floats next to each other */
+.column {
+  float: left;
+  width: 50%;
+  padding: 10px;
+  height: 100%; /* Should be removed. Only for demonstration */
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+li {
+  float: left;
+}
+
+</style>
+<script>
+ function autoCorrecting() {
+   document.getElementById("body").style.cursor = "progress";
+   var form = $("#chatGPT_frm");
+   var url = form.attr('action');
+   $('#chatGPT_area').css("display", "none");
+   $.ajax({
+           type: "POST",
+           url: url,
+           data: form.serialize(), // serializes the form's elements.
+           success: function(data)
+           {
+				dataString =  JSON.stringify(data, null, 2) ;
+				//alert("dataString:" + dataString);
+                
+				$('#backward').css("display", "block");
+				$('#chatGPT_area').css("display", "block");
+				
+			    $('#revision_state').text( "批改完畢" );
+				
+				$('#SCORE').html( data.分數.toString() ) ;
+				$('#RESULT').text("<pre>" + data.結果 + "</pre>");
+				$('#SUGGEST').text( "<pre>" + data.建議 + "</pre>") ;
+
+                //******************************************
+				const utterance_level = data?.互動評分?.utterance_level_results || [];
+				let chat_log = "";
+
+				if (utterance_level.length === 0) {
+					chat_log = "<p>No Chat LOg Data!</p>";
+				} else {
+					chat_log = utterance_level.map(item => `
+						<div class="utterance-item">
+							<pre>${item.utterance ?? ""}</pre>
+							
+						</div>
+						<hr>
+					`).join("");
+				}
+
+				// render
+				$('#CHAT_LOG').html(chat_log);
+				
+				
+				const summary = data?.互動評分?.session_level_summary;
+
+				if (!summary) {
+					$('#CHAT_RESULT').html("<p>No evaluation data available.</p>");
+					document.getElementById("body").style.cursor = "default";
+					return;
+				}
+				
+				// Overall score
+				$('#CHAT_SCORE').text(summary.overall_session_score ?? "");
+
+				// Interaction type/profile
+				$('#CHAT_TYPE').text(summary.interaction_profile ?? "");
+				
+				// Strengths + weaknesses + rationale
+				let resultHtml = `
+					<p>優點</p>
+					${arrayToList(summary.strengths)}
+
+					<p>缺點</p>
+					${arrayToList(summary.weaknesses)}
+
+				`;
+
+				$('#CHAT_RESULT').html(resultHtml);
+
+				// Suggestions + summary rationale
+				let suggestHtml = `
+					${arrayToList(summary.suggestions)}
+
+					<p>總評</p>
+					<pre>${escapeHtml(summary.summary_rationale ?? "")}</pre>
+				`;
+
+				$('#CHAT_SUGGEST').html(suggestHtml);
+				
+			   document.getElementById("body").style.cursor = "default";
+           }
+         });
+ }
+ 
+ function arrayToList(arr) {
+    if (!arr || !Array.isArray(arr) || arr.length === 0) {
+        return "<p>None</p>";
+    }
+    return "<ul><li>" + arr.map(item => escapeHtml(item)).join("</li><li>") + "</li></ul>";
+}
+
+function objectToPre(obj) {
+    if (!obj) return "<pre>{}</pre>";
+    return "<pre>" + escapeHtml(JSON.stringify(obj, null, 2)) + "</pre>";
+}
+
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+ function call_parent_function() {
+     if (window.opener && !window.opener.closed) {
+        window.opener.downloadUnits(); // Calls the function in the parent
+      } else {
+        alert("Parent window is not accessible.");
+      }
+	  window.close();
+ }
+
+
+
+</script>
+</head><body id="body" onload="autoCorrecting()" style="cursor: default;">
+
+  <!-- <div class="column"> -->
+    <div style=" margin:20px; padding:10px;width:100%; display:inline-block;">
+     <div id="revision_state">批改完畢</div> 
+	 <div id="backward" style="display: block; margin: 20px;"> <button style="margin-right:2px;margin-top:8px; " type="button" class="btn btn-primary" id="home" onclick="window.close();">回首頁</button>
+	 </div>
+	  <form id="chatGPT_frm" action="http://120.125.80.92:8088/chatGPT_autoCorrecting" method="POST">
+	    <input type="hidden" id="exam_id" name="exam_id" value="20250208_observer_2">
+		<input type="hidden" id="problem" name="problem" value="假設有多個氣象顯示單位(WeatherDisplay)關注氣象站(WeatherStation)的氣象資料。 
+
+請檢視程式碼介面是否違反 Observer  模式，並撰寫報告，討論新設計有何優點?
+
+下面是程式碼的UML圖
+
+ 
+  
+
+修改使得：
+ 
+   public class Main {
+    public static void main(String[] args) {
+      ISubject subject = new WeatherStation( );
+      IObserver obs  = new WeatherDisplay (&quot;Taipei&quot;) ; 
+      subject.registerObserver( obs ) ; 
+      ((WeatherStation) subject).setWeather(&quot;Cold&quot;); //顯示 &quot;Taipei received WeatherStation update. New weather: Cold &quot;
+      subject.removeObserver( obs ) ; 
+  }
+}">
+		<input type="hidden" id="src_codes" name="src_codes" value="public class Main {
+    public static void main(String[] args) {
+      WeatherDisplay  wd = new WeatherDisplay(new WeatherStation()  ) ; 
+       System.out.println( wd.update() ) ;
+  }
+
+}
+public class WeatherDisplay {
+    private WeatherStation weatherStation;
+    public WeatherDisplay(WeatherStation weatherStation) {
+        this.weatherStation = weatherStation;
+    }
+    public void update() {
+        System.out.println(&quot;Display received update. New weather: &quot; + weatherStation.getWeather());
+    }
+}
+public class WeatherStation {
+    private String weather;
+    public void setWeather(String weather) {
+        this.weather = weather;
+        notifyDisplays();
+    }
+    public void notifyDisplays() {
+        System.out.println(&quot;Notifying displays about weather change to: &quot; + weather);
+    }
+}
+!@#$報告
+新設計有何優點?!@#$
+">
+		<input type="hidden" id="codes" name="codes" value="public class Main {
+    public static void main(String[] args) {
+      ISubject subject = new WeatherStation( );
+      IObserver obs  = new WeatherDisplay (&quot;Taipei&quot;) ; 
+      subject.registerObserver( obs ) ; 
+      ((WeatherStation) subject).setWeather(&quot;Cold&quot;); //顯示 &quot;Taipei received WeatherStation update. New weather: Cold &quot;
+      subject.removeObserver( obs ) ; 
+  }
+}
+class WeatherDisplay implements IObserver{
+    private String weatherStation;
+    public WeatherDisplay(String weatherStation) {
+        this.weatherStation = weatherStation;
+    }
+    
+    @Override
+    public void update(String newWeather) {
+        System.out.println(weatherStation + &quot; received WeatherStation update. New weather: &quot;+ newWeather);
+    }
+}
+import java.util.ArrayList;
+import java.util.List;
+
+class WeatherStation implements ISubject{
+    private List&lt;IObserver&gt; obsList = new ArrayList&lt;&gt;();
+    private String weather;
+    
+    public void setWeather(String weather) {
+        this.weather = weather;
+        notifyDisplays();
+    }
+    
+    public String getWeather(){
+    	return weather;
+    }
+    
+    @Override
+    public void registerObserver(IObserver obs){
+    	obsList.add(obs);
+    }
+    
+    @Override
+    public void removeObserver(IObserver obs){
+    	obsList.remove(obs);
+    }
+    
+    @Override
+    public void notifyDisplays() {
+        for(IObserver o:obsList){
+        	o.update(getWeather());
+        }
+    }
+}
+interface ISubject{
+	void registerObserver(IObserver obs);
+    void removeObserver(IObserver obs);
+    void notifyDisplays();
+}
+interface IObserver{
+	void update(String newWeather);
+}
+!@#$報告
+新設計有何優點?
+本設計以Observer Pattern為核心，改善原本氣象站（WeatherStation）與顯示單位（WeatherDisplay）高度耦合的問題。舊有設計中，氣象站直接推送資料，當觀察者數量或型態改變時，需修改內部邏輯，維護困難。
+改良後透過 IObserver 與 ISubject 介面分離角色，並實作註冊（Register）、移除（Remove）與通知（Notify）機制，使氣象站僅負責管理觀察者清單與發送更新。update 方法加入資料來源名稱參數，提升系統彈性，使觀察者可同時監控多個來源。
+此設計具備低耦合、高擴充性與良好維護性，符合開放封閉原則（OCP），未來新增不同顯示裝置或資料來源時，無需修改既有程式架構，大幅提升系統穩定性與延展性。!@#$
+">
+		
+		<!-- <input type="button" onClick="autoCorrecting()" value="重新批改" /> -->
+	  </form>
+	  <div id="chatGPT_area" style="color: blue; padding: 10px; width: 100%; display: block; overflow-y: scroll;">
+	     
+		    程式碼分數: <span id="SCORE">97</span><br>
+	
+		    批閱結果: <div id="RESULT" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">&lt;pre&gt;經分析，學生程式成功將原本的 WeatherStation 與 WeatherDisplay 高耦合設計，改為以 ISubject（被觀察者）與 IObserver（觀察者）接口抽象分離，並落實 Observer 模式。系統架構遵循減低耦合度、易於擴充與維護等物件導向原則。觀察者透過 registerObserver/removeObserver 註冊移除，WeatherStation 負責通知清單內的所有觀察者。
+
+程式運作流程也與範例一致，可以正確顯示要求的訊息。主要錯誤如下：
+1. WeatherDisplay 建構子參數命名不理想：它接受的是 station 名稱字串，而非實際的 WeatherStation 物件，命名上可能造成混淆。
+2. IObserver.update 方法強制一定要帶入 String newWeather，不符部分應用（但本題目的設計中算合理，可接受）。
+
+本題僅有小幅 naming 與介面彈性小問題，其餘設計及物件導向應有結構皆正確。
+
+報告部分，論述條理清晰，完整說明舊設計缺點及新設計符合 Observer、低耦合、OCP 等優勢，未出現嚴重 AI 抄襲斷語，屬優良論述。&lt;/pre&gt;</div>
+			 
+		    程式碼建議: <div id="SUGGEST" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">&lt;pre&gt;1. 建議 WeatherDisplay 建構子參數可改為 String displayName，以提升語意明確性。
+2. 若需提高彈性，可讓 WeatherStation name 傳入 update 以供觀察者識別資料來源。
+3. 若未來有其他資料型態或複雜通知需求，可將 update 改為參數物件化。
+4. 若考慮多執行緒，obsList 可考慮使用 thread-safe 容器。&lt;/pre&gt;</div>
+		
+		    互動分數 (滿分4分): <span id="CHAT_SCORE">2.33</span><br>
+	
+			互動類型: <div id="CHAT_TYPE" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">表層修正 (surface-refinement)</div>
+	
+		    批閱結果: <div id="CHAT_RESULT" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+					<p>優點</p>
+					<ul><li>能逐步修正與完善程式結構，並根據AI建議適度調整介面與設計。</li><li>報告撰寫時展現出對物件導向概念（如低耦合、高擴充性）的基礎理解。</li></ul>
+
+					<p>缺點</p>
+					<ul><li>長時間卡在表層結構微調，缺乏主動的自我檢查、邏輯驗證、深度反思與多方案比較。</li><li>缺乏對錯誤或結果的分析與追問，測試與驗證過程多半未被明確陳述。</li><li>信任AI提供的方案與步驟，主動質疑與知識修正的意識不足。</li></ul>
+
+				</div>
+			 
+		    互動建議: <div id="CHAT_SUGGEST" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+					<ul><li>多用自然語言描述你遇到的實際困難與預期結果，並明確驗證AI/自己設計的功能是否吻合。</li><li>主動測試設計結果（如印出中間狀態、分析未達預期原因），並嘗試解釋設計決策背後的原理或矛盾。</li><li>逐步練習針對AI回答發問，主動提及比較選擇理由、限制與可能失敗情境，強化自己的認知主體性與批判思考。</li></ul>
+
+					<p>總評</p>
+					<pre>本次互動展現出穩健的程式結構修正與基礎報告歸納能力，但修正多半停留在表層（如改參數、增減成員），僅最後出現較為完整的總結與轉化，且極少主動驗證、反思與質疑或比較其他解法，整體屬於表層修正型互動。</pre>
+				</div>
+			
+			互動紀錄: <div id="CHAT_LOG" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+						<div class="utterance-item">
+							<pre>可以介紹observer pattern是在做什麼給我嗎</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>public class Main {
+    public static void main(String[] args) {
+      ISubject subject = new WeatherStation( );
+      IObserver obs  = new WeatherDisplay ("Taipei") ; 
+      subject.registerObserver( obs ) ; 
+      ((WeatherStation) subject).setWeather("Cold"); //顯示 "Taipei received WeatherStation update. New weather: Cold "
+      subject.removeObserver( obs ) ; 
+  }
+}
+class WeatherDisplay implements IObserver{
+    private WeatherStation weatherStation;
+    public WeatherDisplay(WeatherStation weatherStation) {
+        this.weatherStation = weatherStation;
+    }
+    public void update() {
+        System.out.println("Display received update. New weather: " + weatherStation.getWeather());
+    }
+}
+class WeatherStation implements ISubject{
+    private String weather;
+    public void setWeather(String weather) {
+        this.weather = weather;
+        notifyDisplays();
+    }
+    public void notifyDisplays() {
+        System.out.println("Notifying displays about weather change to: " + weather);
+    }
+}
+interface ISubject{
+	void registerObserver(IObserver obs);
+    void removeObserver(IObserver obs);
+    void notifyDisplays();
+}
+interface IObserver{
+	void update();
+}
+!@#$報告
+新設計有何優點?!@#$
+</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>public class Main {
+    public static void main(String[] args) {
+      ISubject subject = new WeatherStation( );
+      IObserver obs  = new WeatherDisplay ("Taipei") ; 
+      subject.registerObserver( obs ) ; 
+      ((WeatherStation) subject).setWeather("Cold"); //顯示 "Taipei received WeatherStation update. New weather: Cold "
+      subject.removeObserver( obs ) ; 
+  }
+}
+class WeatherDisplay implements IObserver{
+    private WeatherStation weatherStation;
+    public WeatherDisplay(WeatherStation weatherStation) {
+        this.weatherStation = weatherStation;
+    }
+    public void update() {
+        System.out.println("Display received update. New weather: " + weatherStation.getWeather());
+    }
+}
+class WeatherStation implements ISubject{
+    private String weather;
+    public void setWeather(String weather) {
+        this.weather = weather;
+        notifyDisplays();
+    }
+    void registerObserver(IObserver obs){
+    	
+    }
+    void removeObserver(IObserver obs){
+    }
+    public void notifyDisplays() {
+        System.out.println("Notifying displays about weather change to: " + weather);
+    }
+}
+interface ISubject{
+	void registerObserver(IObserver obs);
+    void removeObserver(IObserver obs);
+    void notifyDisplays();
+}
+interface IObserver{
+	void update();
+}
+!@#$報告
+新設計有何優點?!@#$
+</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>public class Main {
+    public static void main(String[] args) {
+      ISubject subject = new WeatherStation( );
+      IObserver obs  = new WeatherDisplay ("Taipei") ; 
+      subject.registerObserver( obs ) ; 
+      ((WeatherStation) subject).setWeather("Cold"); //顯示 "Taipei received WeatherStation update. New weather: Cold "
+      subject.removeObserver( obs ) ; 
+  }
+}
+class WeatherDisplay implements IObserver{
+    private WeatherStation weatherStation;
+    public WeatherDisplay(String weatherStation) {
+        this.weatherStation = weatherStation;
+    }
+    public void update() {
+        System.out.println("Display received update. New weather: " + weatherStation.getWeather());
+    }
+}
+class WeatherStation implements ISubject{
+    private String weather;
+    public void setWeather(String weather) {
+        this.weather = weather;
+        notifyDisplays();
+    }
+    void registerObserver(IObserver obs){
+    	
+    }
+    void removeObserver(IObserver obs){
+    }
+    public void notifyDisplays() {
+        System.out.println("Notifying displays about weather change to: " + weather);
+    }
+}
+interface ISubject{
+	void registerObserver(IObserver obs);
+    void removeObserver(IObserver obs);
+    void notifyDisplays();
+}
+interface IObserver{
+	void update();
+}
+!@#$報告
+新設計有何優點?!@#$
+</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>public class Main {
+    public static void main(String[] args) {
+      ISubject subject = new WeatherStation( );
+      IObserver obs  = new WeatherDisplay ("Taipei") ; 
+      subject.registerObserver( obs ) ; 
+      ((WeatherStation) subject).setWeather("Cold"); //顯示 "Taipei received WeatherStation update. New weather: Cold "
+      subject.removeObserver( obs ) ; 
+  }
+}
+class WeatherDisplay implements IObserver{
+    private WeatherStation weatherStation;
+    public WeatherDisplay(String weatherStation) {
+        this.weatherStation = weatherStation;
+    }
+    public void update() {
+        System.out.println("Display received update. New weather: " + weatherStation.getWeather());
+    }
+}
+class WeatherStation implements ISubject{
+    private String weather;
+    public void setWeather(String weather) {
+        this.weather = weather;
+        notifyDisplays();
+    }
+    public void registerObserver(IObserver obs){
+    	
+    }
+    public void removeObserver(IObserver obs){
+    }
+    public void notifyDisplays() {
+        System.out.println("Notifying displays about weather change to: " + weather);
+    }
+}
+interface ISubject{
+	void registerObserver(IObserver obs);
+    void removeObserver(IObserver obs);
+    void notifyDisplays();
+}
+interface IObserver{
+	void update();
+}
+!@#$報告
+新設計有何優點?!@#$
+</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>public class Main {
+    public static void main(String[] args) {
+      ISubject subject = new WeatherStation( );
+      IObserver obs  = new WeatherDisplay ("Taipei") ; 
+      subject.registerObserver( obs ) ; 
+      ((WeatherStation) subject).setWeather("Cold"); //顯示 "Taipei received WeatherStation update. New weather: Cold "
+      subject.removeObserver( obs ) ; 
+  }
+}
+class WeatherDisplay implements IObserver{
+    private String cityName;
+    public WeatherDisplay(String weatherStation) {
+        this.weatherStation = weatherStation;
+    }
+    public void update() {
+        System.out.println("Display received update. New weather: " + weatherStation.getWeather());
+    }
+}
+class WeatherStation implements ISubject{
+    private String weather;
+    public void setWeather(String weather) {
+        this.weather = weather;
+        notifyDisplays();
+    }
+    public void registerObserver(IObserver obs){
+    	
+    }
+    public void removeObserver(IObserver obs){
+    }
+    public void notifyDisplays() {
+        System.out.println("Notifying displays about weather change to: " + weather);
+    }
+}
+interface ISubject{
+	void registerObserver(IObserver obs);
+    void removeObserver(IObserver obs);
+    void notifyDisplays();
+}
+interface IObserver{
+	void update();
+}
+!@#$報告
+新設計有何優點?!@#$
+</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>public class Main {
+    public static void main(String[] args) {
+      ISubject subject = new WeatherStation( );
+      IObserver obs  = new WeatherDisplay ("Taipei") ; 
+      subject.registerObserver( obs ) ; 
+      ((WeatherStation) subject).setWeather("Cold"); //顯示 "Taipei received WeatherStation update. New weather: Cold "
+      subject.removeObserver( obs ) ; 
+  }
+}
+class WeatherDisplay implements IObserver{
+    private String cityName;
+    public WeatherDisplay(String weatherStation) {
+        this.cityName = cityName;
+    }
+    public void update() {
+        System.out.println("Display received update. New weather: " + weatherStation.getWeather());
+    }
+}
+class WeatherStation implements ISubject{
+    private String weather;
+    public void setWeather(String weather) {
+        this.weather = weather;
+        notifyDisplays();
+    }
+    public void registerObserver(IObserver obs){
+    	
+    }
+    public void removeObserver(IObserver obs){
+    }
+    public void notifyDisplays() {
+        System.out.println("Notifying displays about weather change to: " + weather);
+    }
+}
+interface ISubject{
+	void registerObserver(IObserver obs);
+    void removeObserver(IObserver obs);
+    void notifyDisplays();
+}
+interface IObserver{
+	void update();
+}
+!@#$報告
+新設計有何優點?!@#$
+</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>public class Main {
+    public static void main(String[] args) {
+      ISubject subject = new WeatherStation( );
+      IObserver obs  = new WeatherDisplay ("Taipei") ; 
+      subject.registerObserver( obs ) ; 
+      ((WeatherStation) subject).setWeather("Cold"); //顯示 "Taipei received WeatherStation update. New weather: Cold "
+      subject.removeObserver( obs ) ; 
+  }
+}
+class WeatherDisplay implements IObserver{
+    private String cityName;
+    public WeatherDisplay(String weatherStation) {
+        this.cityName = cityName;
+    }
+    public void update() {
+        System.out.println("Display received update. New weather: " + cityName);
+    }
+}
+class WeatherStation implements ISubject{
+    private String weather;
+    public void setWeather(String weather) {
+        this.weather = weather;
+        notifyDisplays();
+    }
+    public void registerObserver(IObserver obs){
+    	
+    }
+    public void removeObserver(IObserver obs){
+    }
+    public void notifyDisplays() {
+        System.out.println("Notifying displays about weather change to: " + weather);
+    }
+}
+interface ISubject{
+	void registerObserver(IObserver obs);
+    void removeObserver(IObserver obs);
+    void notifyDisplays();
+}
+interface IObserver{
+	void update();
+}
+!@#$報告
+新設計有何優點?!@#$
+</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>public class Main {
+    public static void main(String[] args) {
+      ISubject subject = new WeatherStation( );
+      IObserver obs  = new WeatherDisplay ("Taipei") ; 
+      subject.registerObserver( obs ) ; 
+      ((WeatherStation) subject).setWeather("Cold"); //顯示 "Taipei received WeatherStation update. New weather: Cold "
+      subject.removeObserver( obs ) ; 
+  }
+}
+class WeatherDisplay implements IObserver{
+    private String cityName;
+    public WeatherDisplay(String weatherStation) {
+        this.cityName = cityName;
+    }
+    
+    @override
+    public void update(String sourceName, String newWeather) {
+        System.out.println(cityName + " received WeatherStation update. New weather: "+ newWeather);
+    }
+}
+import java.util.ArrayList;
+import java.util.List;
+
+class WeatherStation implements ISubject{
+    private List<iobserver> obsList = new ArrayList&lt;&gt;();
+    private String weather;
+    
+    public void setWeather(String weather) {
+        this.weather = weather;
+        notifyDisplays();
+    }
+    
+    public String getWeather(){
+    	return weather;
+    }
+    
+    @override
+    public void registerObserver(IObserver obs){
+    	obsList.add(obs);
+    }
+    
+    @override
+    public void removeObserver(IObserver obs){
+    	obsList.remove(obs);
+    }
+    
+    @override
+    public void notifyDisplays() {
+        for(IObserver o:obsList){
+        	o.update(this.getClass().getSimpleName(),getWeather());
+        }
+    }
+}
+interface ISubject{
+	void registerObserver(IObserver obs);
+    void removeObserver(IObserver obs);
+    void notifyDisplays();
+}
+interface IObserver{
+	void update();
+}
+!@#$報告
+新設計有何優點?!@#$
+</iobserver></pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>public class Main {
+    public static void main(String[] args) {
+      ISubject subject = new WeatherStation( );
+      IObserver obs  = new WeatherDisplay ("Taipei") ; 
+      subject.registerObserver( obs ) ; 
+      ((WeatherStation) subject).setWeather("Cold"); //顯示 "Taipei received WeatherStation update. New weather: Cold "
+      subject.removeObserver( obs ) ; 
+  }
+}
+class WeatherDisplay implements IObserver{
+    private String cityName;
+    public WeatherDisplay(String weatherStation) {
+        this.cityName = cityName;
+    }
+    
+    @Override
+    public void update(String sourceName, String newWeather) {
+        System.out.println(cityName + " received WeatherStation update. New weather: "+ newWeather);
+    }
+}
+import java.util.ArrayList;
+import java.util.List;
+
+class WeatherStation implements ISubject{
+    private List<iobserver> obsList = new ArrayList&lt;&gt;();
+    private String weather;
+    
+    public void setWeather(String weather) {
+        this.weather = weather;
+        notifyDisplays();
+    }
+    
+    public String getWeather(){
+    	return weather;
+    }
+    
+    @Override
+    public void registerObserver(IObserver obs){
+    	obsList.add(obs);
+    }
+    
+    @Override
+    public void removeObserver(IObserver obs){
+    	obsList.remove(obs);
+    }
+    
+    @Override
+    public void notifyDisplays() {
+        for(IObserver o:obsList){
+        	o.update(this.getClass().getSimpleName(),getWeather());
+        }
+    }
+}
+interface ISubject{
+	void registerObserver(IObserver obs);
+    void removeObserver(IObserver obs);
+    void notifyDisplays();
+}
+interface IObserver{
+	void update();
+}
+!@#$報告
+新設計有何優點?!@#$
+</iobserver></pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>public class Main {
+    public static void main(String[] args) {
+      ISubject subject = new WeatherStation( );
+      IObserver obs  = new WeatherDisplay ("Taipei") ; 
+      subject.registerObserver( obs ) ; 
+      ((WeatherStation) subject).setWeather("Cold"); //顯示 "Taipei received WeatherStation update. New weather: Cold "
+      subject.removeObserver( obs ) ; 
+  }
+}
+class WeatherDisplay implements IObserver{
+    private String cityName;
+    public WeatherDisplay(String weatherStation) {
+        this.cityName = cityName;
+    }
+    
+    @Override
+    public void update(String sourceName, String newWeather) {
+        System.out.println(cityName + " received WeatherStation update. New weather: "+ newWeather);
+    }
+}
+import java.util.ArrayList;
+import java.util.List;
+
+class WeatherStation implements ISubject{
+    private List<iobserver> obsList = new ArrayList&lt;&gt;();
+    private String weather;
+    
+    public void setWeather(String weather) {
+        this.weather = weather;
+        notifyDisplays();
+    }
+    
+    public String getWeather(){
+    	return weather;
+    }
+    
+    @Override
+    public void registerObserver(IObserver obs){
+    	obsList.add(obs);
+    }
+    
+    @Override
+    public void removeObserver(IObserver obs){
+    	obsList.remove(obs);
+    }
+    
+    @Override
+    public void notifyDisplays() {
+        for(IObserver o:obsList){
+        	o.update(this.getClass().getSimpleName(),getWeather());
+        }
+    }
+}
+interface ISubject{
+	void registerObserver(IObserver obs);
+    void removeObserver(IObserver obs);
+    void notifyDisplays();
+}
+interface IObserver{
+	void update();
+}
+!@#$報告
+新設計有何優點?!@#$
+</iobserver></pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>public class Main {
+    public static void main(String[] args) {
+      ISubject subject = new WeatherStation( );
+      IObserver obs  = new WeatherDisplay ("Taipei") ; 
+      subject.registerObserver( obs ) ; 
+      ((WeatherStation) subject).setWeather("Cold"); //顯示 "Taipei received WeatherStation update. New weather: Cold "
+      subject.removeObserver( obs ) ; 
+  }
+}
+class WeatherDisplay implements IObserver{
+    private String cityName;
+    public WeatherDisplay(String weatherStation) {
+        this.cityName = cityName;
+    }
+    
+    @Override
+    public void update(String newWeather) {
+        System.out.println(cityName + " received WeatherStation update. New weather: "+ newWeather);
+    }
+}
+import java.util.ArrayList;
+import java.util.List;
+
+class WeatherStation implements ISubject{
+    private List<iobserver> obsList = new ArrayList&lt;&gt;();
+    private String weather;
+    
+    public void setWeather(String weather) {
+        this.weather = weather;
+        notifyDisplays();
+    }
+    
+    public String getWeather(){
+    	return weather;
+    }
+    
+    @Override
+    public void registerObserver(IObserver obs){
+    	obsList.add(obs);
+    }
+    
+    @Override
+    public void removeObserver(IObserver obs){
+    	obsList.remove(obs);
+    }
+    
+    @Override
+    public void notifyDisplays() {
+        for(IObserver o:obsList){
+        	o.update(getWeather());
+        }
+    }
+}
+interface ISubject{
+	void registerObserver(IObserver obs);
+    void removeObserver(IObserver obs);
+    void notifyDisplays();
+}
+interface IObserver{
+	void update(String newWeather);
+}
+!@#$報告
+新設計有何優點?!@#$
+</iobserver></pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>public class Main {
+    public static void main(String[] args) {
+      ISubject subject = new WeatherStation( );
+      IObserver obs  = new WeatherDisplay ("Taipei") ; 
+      subject.registerObserver( obs ) ; 
+      ((WeatherStation) subject).setWeather("Cold"); //顯示 "Taipei received WeatherStation update. New weather: Cold "
+      subject.removeObserver( obs ) ; 
+  }
+}
+class WeatherDisplay implements IObserver{
+    private String weatherStation;
+    public WeatherDisplay(String weatherStation) {
+        this.weatherStation = weatherStation;
+    }
+    
+    @Override
+    public void update(String newWeather) {
+        System.out.println(weatherStation + " received WeatherStation update. New weather: "+ newWeather);
+    }
+}
+import java.util.ArrayList;
+import java.util.List;
+
+class WeatherStation implements ISubject{
+    private List<iobserver> obsList = new ArrayList&lt;&gt;();
+    private String weather;
+    
+    public void setWeather(String weather) {
+        this.weather = weather;
+        notifyDisplays();
+    }
+    
+    public String getWeather(){
+    	return weather;
+    }
+    
+    @Override
+    public void registerObserver(IObserver obs){
+    	obsList.add(obs);
+    }
+    
+    @Override
+    public void removeObserver(IObserver obs){
+    	obsList.remove(obs);
+    }
+    
+    @Override
+    public void notifyDisplays() {
+        for(IObserver o:obsList){
+        	o.update(getWeather());
+        }
+    }
+}
+interface ISubject{
+	void registerObserver(IObserver obs);
+    void removeObserver(IObserver obs);
+    void notifyDisplays();
+}
+interface IObserver{
+	void update(String newWeather);
+}
+!@#$報告
+新設計有何優點?!@#$
+</iobserver></pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>可以在updata傳入的參數加入String sourceName監控是誰傳送過來的</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>我可以怎麼撰寫報告</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>public class Main {
+    public static void main(String[] args) {
+      ISubject subject = new WeatherStation( );
+      IObserver obs  = new WeatherDisplay ("Taipei") ; 
+      subject.registerObserver( obs ) ; 
+      ((WeatherStation) subject).setWeather("Cold"); //顯示 "Taipei received WeatherStation update. New weather: Cold "
+      subject.removeObserver( obs ) ; 
+  }
+}
+class WeatherDisplay implements IObserver{
+    private String weatherStation;
+    public WeatherDisplay(String weatherStation) {
+        this.weatherStation = weatherStation;
+    }
+    
+    @Override
+    public void update(String newWeather) {
+        System.out.println(weatherStation + " received WeatherStation update. New weather: "+ newWeather);
+    }
+}
+import java.util.ArrayList;
+import java.util.List;
+
+class WeatherStation implements ISubject{
+    private List<iobserver> obsList = new ArrayList&lt;&gt;();
+    private String weather;
+    
+    public void setWeather(String weather) {
+        this.weather = weather;
+        notifyDisplays();
+    }
+    
+    public String getWeather(){
+    	return weather;
+    }
+    
+    @Override
+    public void registerObserver(IObserver obs){
+    	obsList.add(obs);
+    }
+    
+    @Override
+    public void removeObserver(IObserver obs){
+    	obsList.remove(obs);
+    }
+    
+    @Override
+    public void notifyDisplays() {
+        for(IObserver o:obsList){
+        	o.update(getWeather());
+        }
+    }
+}
+interface ISubject{
+	void registerObserver(IObserver obs);
+    void removeObserver(IObserver obs);
+    void notifyDisplays();
+}
+interface IObserver{
+	void update(String newWeather);
+}
+!@#$報告
+新設計有何優點?
+本設計以Observer Pattern為核心，改善原本氣象站（WeatherStation）與顯示單位（WeatherDisplay）高度耦合的問題。舊有設計中，氣象站直接推送資料，當觀察者數量或型態改變時，需修改內部邏輯，維護困難。
+改良後透過 IObserver 與 ISubject 介面分離角色，並實作註冊（Register）、移除（Remove）與通知（Notify）機制，使氣象站僅負責管理觀察者清單與發送更新。update 方法加入資料來源名稱參數，提升系統彈性，使觀察者可同時監控多個來源。
+此設計具備低耦合、高擴充性與良好維護性，符合開放封閉原則（OCP），未來新增不同顯示裝置或資料來源時，無需修改既有程式架構，大幅提升系統穩定性與延展性。!@#$
+</iobserver></pre>
+							
+						</div>
+						<hr>
+					</div>
+		
+		
+	  </div>
+    </div>
+    <div id="area1" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+     問題描述: <br><div id="area1_code"> <div style="text-align:left">
+<p> 假設有多個氣象顯示單位(WeatherDisplay)關注氣象站(WeatherStation)的氣象資料。 <br>
+請檢視程式碼介面是否違反 Observer  模式，並撰寫報告，討論新設計有何優點?
+</p><div>
+下面是程式碼的UML圖<br>
+ <a href="./AI學習系統Observer Pattern_files/UML1.png" target="_blank">
+ <img src="./AI學習系統Observer Pattern_files/UML1.png" style="width:300px; height:200px;"> </a>
+</div>
+修改使得：
+<pre style="width:500px; height:300px;"> 
+   public class Main {
+    public static void main(String[] args) {
+      ISubject subject = new WeatherStation( );
+      IObserver obs  = new WeatherDisplay ("Taipei") ; 
+      subject.registerObserver( obs ) ; 
+      ((WeatherStation) subject).setWeather("Cold"); //顯示 "Taipei received WeatherStation update. New weather: Cold "
+      subject.removeObserver( obs ) ; 
+  }
+}
+</pre>
+ <br>
+ <br>
+
+<p></p>
+
+</div></div> <!-- not escapping HTML elements -->
+    </div>
+	 
+    <div id="area2" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+     原始程式: <br><textarea id="area2_code" cols="150" rows="30">public class Main {
+    public static void main(String[] args) {
+      WeatherDisplay  wd = new WeatherDisplay(new WeatherStation()  ) ; 
+       System.out.println( wd.update() ) ;
+  }
+
+}
+public class WeatherDisplay {
+    private WeatherStation weatherStation;
+    public WeatherDisplay(WeatherStation weatherStation) {
+        this.weatherStation = weatherStation;
+    }
+    public void update() {
+        System.out.println("Display received update. New weather: " + weatherStation.getWeather());
+    }
+}
+public class WeatherStation {
+    private String weather;
+    public void setWeather(String weather) {
+        this.weather = weather;
+        notifyDisplays();
+    }
+    public void notifyDisplays() {
+        System.out.println("Notifying displays about weather change to: " + weather);
+    }
+}
+!@#$報告
+新設計有何優點?!@#$
+</textarea>
+    </div>
+
+
+    <div id="area3" style=" margin:20px; padding:10px;width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+     你的程式碼: <br><textarea id="area3_code" cols="150" rows="30">public class Main {
+    public static void main(String[] args) {
+      ISubject subject = new WeatherStation( );
+      IObserver obs  = new WeatherDisplay ("Taipei") ; 
+      subject.registerObserver( obs ) ; 
+      ((WeatherStation) subject).setWeather("Cold"); //顯示 "Taipei received WeatherStation update. New weather: Cold "
+      subject.removeObserver( obs ) ; 
+  }
+}
+class WeatherDisplay implements IObserver{
+    private String weatherStation;
+    public WeatherDisplay(String weatherStation) {
+        this.weatherStation = weatherStation;
+    }
+    
+    @Override
+    public void update(String newWeather) {
+        System.out.println(weatherStation + " received WeatherStation update. New weather: "+ newWeather);
+    }
+}
+import java.util.ArrayList;
+import java.util.List;
+
+class WeatherStation implements ISubject{
+    private List&lt;IObserver&gt; obsList = new ArrayList&lt;&gt;();
+    private String weather;
+    
+    public void setWeather(String weather) {
+        this.weather = weather;
+        notifyDisplays();
+    }
+    
+    public String getWeather(){
+    	return weather;
+    }
+    
+    @Override
+    public void registerObserver(IObserver obs){
+    	obsList.add(obs);
+    }
+    
+    @Override
+    public void removeObserver(IObserver obs){
+    	obsList.remove(obs);
+    }
+    
+    @Override
+    public void notifyDisplays() {
+        for(IObserver o:obsList){
+        	o.update(getWeather());
+        }
+    }
+}
+interface ISubject{
+	void registerObserver(IObserver obs);
+    void removeObserver(IObserver obs);
+    void notifyDisplays();
+}
+interface IObserver{
+	void update(String newWeather);
+}
+!@#$報告
+新設計有何優點?
+本設計以Observer Pattern為核心，改善原本氣象站（WeatherStation）與顯示單位（WeatherDisplay）高度耦合的問題。舊有設計中，氣象站直接推送資料，當觀察者數量或型態改變時，需修改內部邏輯，維護困難。
+改良後透過 IObserver 與 ISubject 介面分離角色，並實作註冊（Register）、移除（Remove）與通知（Notify）機制，使氣象站僅負責管理觀察者清單與發送更新。update 方法加入資料來源名稱參數，提升系統彈性，使觀察者可同時監控多個來源。
+此設計具備低耦合、高擴充性與良好維護性，符合開放封閉原則（OCP），未來新增不同顯示裝置或資料來源時，無需修改既有程式架構，大幅提升系統穩定性與延展性。!@#$
+</textarea>
+    </div>
+	
+	<script>
+		$(document).ready(function() {
+			function decodeHtmlEntities(str) {
+				return $('<textarea/>').html(str).text();
+			}
+
+			let problemHTML = $('#area1_code').html();
+			problemHTML = problemHTML.replace(/<br\s*\/?>/gi, '\n');
+			let problemText = $('<div>').html(problemHTML).text().trim();
+			$('#problem').val(problemText);
+
+			$('#src_codes').val(decodeHtmlEntities($('#area2_code').val()));
+			$('#codes').val(decodeHtmlEntities($('#area3_code').val()));
+		});
+		</script>
+
+
+</body></html>
