@@ -9,7 +9,7 @@ public class WeatherDisplay implements IObserver {
 
     // Subject 呼叫此方法把資料「推」進來，不需要反過來去問 Subject
     @Override
-    public void update(String weather) {
+    public void update(String sourceName, String weather) {
         System.out.println(cityName + " received " + sourceName + " update. New weather: " + weather);
     }
 }

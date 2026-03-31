@@ -22,7 +22,7 @@ public class WeatherStation implements ISubject {
     public void notifyObservers() {
         // 把「自己的類別名稱」和「最新天氣」推給每個 Observer
         for (IObserver o : observers) {
-            o.update(weather);
+            o.update(this.getClass().getSimpleName(), weather);
         }
     }
 

@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Main",
+      "request": "launch",
+      "mainClass": "SOLID原則.氣象應用.Main",
+      "projectName": "Homework_ae483d57"
+    },
+    {
+      "type": "java",
+      "name": "Main",
+      "request": "launch",
+      "mainClass": "SOLID原則.電商應用.Main",
+      "projectName": "Homework_ae483d57"
+    },
+    {
+      "type": "java",
+      "name": "Run 電商應用 Main",
+      "request": "launch",
+      "mainClass": "SOLID原則.電商應用.Main",
+      "projectName": "oop-exercise"
+    },
+    {
+      "type": "java",
+      "name": "Run 氣象應用 Main",
+      "request": "launch",
+      "mainClass": "SOLID原則.氣象應用.Main",
+      "projectName": "oop-exercise"
+    }
+  ]
+}

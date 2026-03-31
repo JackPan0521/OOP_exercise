@@ -1,0 +1,650 @@
+
+<!-- saved from url=(0042)http://120.125.80.92:8088/task_answer_test -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link href="./AI學習系統_Observer Pattern_店商應用_files/jquerysctipttop.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="./AI學習系統_Observer Pattern_店商應用_files/bootstrap.min.css">
+	<link rel="stylesheet" href="./AI學習系統_Observer Pattern_店商應用_files/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <link rel="stylesheet" href="./AI學習系統_Observer Pattern_店商應用_files/jquery.scrollbar.min.css">
+
+	<script src="./AI學習系統_Observer Pattern_店商應用_files/jquery-1.12.4.min.js.下載" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+	<script src="./AI學習系統_Observer Pattern_店商應用_files/bootstrap.min.js.下載"></script>
+    <script src="./AI學習系統_Observer Pattern_店商應用_files/jquery.scrollbar.min.js.下載"></script>
+<style>
+.right { 
+ color: green;   
+}
+.wrong {
+ color: red;   
+}
+#code {
+   overflow: auto;
+   }
+   * {
+  box-sizing: border-box;
+}
+
+/* Create two equal columns that floats next to each other */
+.column {
+  float: left;
+  width: 50%;
+  padding: 10px;
+  height: 100%; /* Should be removed. Only for demonstration */
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+li {
+  float: left;
+}
+
+</style>
+<script>
+ function autoCorrecting() {
+   document.getElementById("body").style.cursor = "progress";
+   var form = $("#chatGPT_frm");
+   var url = form.attr('action');
+   $('#chatGPT_area').css("display", "none");
+   $.ajax({
+           type: "POST",
+           url: url,
+           data: form.serialize(), // serializes the form's elements.
+           success: function(data)
+           {
+				dataString =  JSON.stringify(data, null, 2) ;
+				//alert("dataString:" + dataString);
+                
+				$('#backward').css("display", "block");
+				$('#chatGPT_area').css("display", "block");
+				
+			    $('#revision_state').text( "批改完畢" );
+				
+				$('#SCORE').html( data.分數.toString() ) ;
+				$('#RESULT').text("<pre>" + data.結果 + "</pre>");
+				$('#SUGGEST').text( "<pre>" + data.建議 + "</pre>") ;
+
+                //******************************************
+				const utterance_level = data?.互動評分?.utterance_level_results || [];
+				let chat_log = "";
+
+				if (utterance_level.length === 0) {
+					chat_log = "<p>No Chat LOg Data!</p>";
+				} else {
+					chat_log = utterance_level.map(item => `
+						<div class="utterance-item">
+							<pre>${item.utterance ?? ""}</pre>
+							
+						</div>
+						<hr>
+					`).join("");
+				}
+
+				// render
+				$('#CHAT_LOG').html(chat_log);
+				
+				
+				const summary = data?.互動評分?.session_level_summary;
+
+				if (!summary) {
+					$('#CHAT_RESULT').html("<p>No evaluation data available.</p>");
+					document.getElementById("body").style.cursor = "default";
+					return;
+				}
+				
+				// Overall score
+				$('#CHAT_SCORE').text(summary.overall_session_score ?? "");
+
+				// Interaction type/profile
+				$('#CHAT_TYPE').text(summary.interaction_profile ?? "");
+				
+				// Strengths + weaknesses + rationale
+				let resultHtml = `
+					<p>優點</p>
+					${arrayToList(summary.strengths)}
+
+					<p>缺點</p>
+					${arrayToList(summary.weaknesses)}
+
+				`;
+
+				$('#CHAT_RESULT').html(resultHtml);
+
+				// Suggestions + summary rationale
+				let suggestHtml = `
+					${arrayToList(summary.suggestions)}
+
+					<p>總評</p>
+					<pre>${escapeHtml(summary.summary_rationale ?? "")}</pre>
+				`;
+
+				$('#CHAT_SUGGEST').html(suggestHtml);
+				
+			   document.getElementById("body").style.cursor = "default";
+           }
+         });
+ }
+ 
+ function arrayToList(arr) {
+    if (!arr || !Array.isArray(arr) || arr.length === 0) {
+        return "<p>None</p>";
+    }
+    return "<ul><li>" + arr.map(item => escapeHtml(item)).join("</li><li>") + "</li></ul>";
+}
+
+function objectToPre(obj) {
+    if (!obj) return "<pre>{}</pre>";
+    return "<pre>" + escapeHtml(JSON.stringify(obj, null, 2)) + "</pre>";
+}
+
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+ function call_parent_function() {
+     if (window.opener && !window.opener.closed) {
+        window.opener.downloadUnits(); // Calls the function in the parent
+      } else {
+        alert("Parent window is not accessible.");
+      }
+	  window.close();
+ }
+
+
+
+</script>
+</head><body id="body" onload="autoCorrecting()" style="cursor: default;">
+
+  <!-- <div class="column"> -->
+    <div style=" margin:20px; padding:10px;width:100%; display:inline-block;">
+     <div id="revision_state">批改完畢</div> 
+	 <div id="backward" style="display: block; margin: 20px;"> <button style="margin-right:2px;margin-top:8px; " type="button" class="btn btn-primary" id="home" onclick="window.close();">回首頁</button>
+	 </div>
+	  <form id="chatGPT_frm" action="http://120.125.80.92:8088/chatGPT_autoCorrecting" method="POST">
+	    <input type="hidden" id="exam_id" name="exam_id" value="20250208_observer_4">
+		<input type="hidden" id="problem" name="problem" value="假設有許多購物者(Shopper)關注PriceTracker回報的西瓜架構。
+
+請檢視程式碼介面是否違反 Observer  模式，並撰寫報告，討論新設計有何優點?
+下面是程式碼的UML圖
+
+ 
+  
+
+修改使得：
+ 	  
+  public class Main {
+    public static void main(String[] args) {
+     ISubject subject = new PriceTracker( );
+     IObserver obs  = new Shopper (&quot;Mary&quot;) ; 
+     subject.registerObserver( obs ) ;
+     ((PriceTracker)subject).setPrice(25); 
+	 //顯示 &quot;Mary received update from PriceTracker. New Watermelon price:25&quot;
+
+     subject.removeObserver( obs ) ; 
+  }
+}">
+		<input type="hidden" id="src_codes" name="src_codes" value="public class Main {
+   public static void main(String[] args) {
+        Shopper  p = new Shopper(new PriceTracker()  ) ; 
+        System.out.println( p.update() ) ;
+  }
+}
+public class PriceTracker {
+    private double price;
+    public void setPrice(double price ) {
+        this.price = price;
+        notifyShoppers();
+    }
+    public void notifyShoppers() {
+        System.out.println(&quot;Notifying notifyShoppers about price: &quot; + price);
+    }
+}
+public class Shopper {
+    private PriceTracker pt;
+    public Shopper(PriceTracker pt) {
+        this.pt = pt;
+    }
+    public void update() {
+        System.out.println(&quot;Shopper received update. New Tprice : &quot; + pt.getPrice());
+    }
+}
+!@#$報告
+新設計有何優點?!@#$
+">
+		<input type="hidden" id="codes" name="codes" value="public class Main {
+    public static void main(String[] args) {
+     ISubject subject = new PriceTracker( );
+     IObserver obs  = new Shopper (&quot;Mary&quot;) ; 
+     subject.registerObserver( obs ) ;
+     ((PriceTracker)subject).setPrice(25); 
+	 //顯示 &quot;Mary received update from PriceTracker. New Watermelon price:25&quot;
+
+     subject.removeObserver( obs ) ; 
+  }
+}
+import java.util.ArrayList;
+import java.util.List;
+
+class PriceTracker implements ISubject{
+    private List&lt;IObserver&gt; shopperList = new ArrayList&lt;&gt;();
+    private int price;
+
+    @Override
+    public void setPrice(int price){
+        this.price = price;
+        notifyObservers();
+    }
+    
+    @Override
+    public void removeObserver(IObserver obs){
+        shopperList.remove(obs);
+    }
+    
+    @Override
+    public void registerObserver(IObserver obs){
+        shopperList.add(obs);
+    }
+
+    private void notifyObservers(){
+        for (IObserver o : shopperList) {
+            o.update(price);
+        }
+    }
+}
+class Shopper implements IObserver{
+    private String shopName;
+
+    public Shopper(String shopName){
+        this.shopName = shopName;
+    }
+
+    @Override
+    public void update(int price){
+        System.out.println(this.shopName + &quot; received update from PriceTracker. New Watermelon price:&quot; + price);
+    }
+
+    public String getShopName(){
+        return shopName;
+    }
+}
+
+interface IObserver {
+    void update(int price);
+}
+
+interface ISubject {
+    void registerObserver(IObserver obs);
+    void removeObserver(IObserver obs);
+    void setPrice(int price);
+}
+
+!@#$報告
+新設計有何優點?
+本設計採用 Observer，將價格追蹤與通知處理分離。PriceTracker 只負責維護價格與廣播，Shopper 專注接收與呈現，降低耦合、提升可維護性。新增通知對象時只需擴充新的 Observer，不必修改既有主體邏輯，符合開放封閉原則。且可在執行期動態訂閱與取消，彈性高，適合電商即時價格通知情境。!@#$
+">
+		
+		<!-- <input type="button" onClick="autoCorrecting()" value="重新批改" /> -->
+	  </form>
+	  <div id="chatGPT_area" style="color: blue; padding: 10px; width: 100%; display: block; overflow-y: scroll;">
+	     
+		    程式碼分數: <span id="SCORE">100</span><br>
+	
+		    批閱結果: <div id="RESULT" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">&lt;pre&gt;學生的程式以 Observer 模式重構，完全解決了原始程式違反 Observer 原則的問題。具體來說：  (1) 原始碼由購物者持有 PriceTracker 物件，相互耦合，違反物件導向依賴反轉原則；學生活動用接口介面， PriceTracker（主體）保存 Observer 介面清單 (IObserver)，並正確呼叫 update 通知，而 Shopper 作為 IObserver 的實作，根據觀察主體改變來 update，這保證了鬆耦合設計。 (2) PriceTracker 不再需要知道 Shopper 具體細節，只通過 IObserver 來回傳訊息，使主題與觀察者獨立成長與修改，完全符合標準 Observer 模式。 (3) 報告敘述正確：分離責任、提高彈性、降低耦合、符合開放封閉原則，內容沒發現抄襲一般 AI 報告常見敘述，屬於合格內容。  錯誤數量：0個。 程式功能正確，物件導向設計正確。報告也正確。&lt;/pre&gt;</div>
+			 
+		    程式碼建議: <div id="SUGGEST" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">&lt;pre&gt;建議：可將 PriceTracker setPrice 方法及 notifyObservers 設 public/private 做更細緻的存取控制。為提升可測試性與一致性，也可加入 getPrice 方法在 PriceTracker，方便其它邏輯呼叫。&lt;/pre&gt;</div>
+		
+		    互動分數 (滿分4分): <span id="CHAT_SCORE">2.17</span><br>
+	
+			互動類型: <div id="CHAT_TYPE" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">表層修正 (surface-refinement)</div>
+	
+		    批閱結果: <div id="CHAT_RESULT" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+					<p>優點</p>
+					<ul><li>學生有明確陳述問題情境與設計優點，基本表達需求與評價結果標準。</li><li>對於AI回饋有適當的疑問與澄清，能提出進一步確認設計與需求的關係。</li></ul>
+
+					<p>缺點</p>
+					<ul><li>缺乏自主測試或主動驗證AI產出，對正確性判斷多依賴AI回覆。</li><li>鮮少主動提出程式改寫、方案比較或深入反思自我理解的表現。</li><li>互動過程以需求澄清和簡單報告陳述為主，協作深化有限。</li></ul>
+
+				</div>
+			 
+		    互動建議: <div id="CHAT_SUGGEST" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+					<ul><li>嘗試在提出或修改程式碼後，主動驗證結果（如附上執行測試輸出、邊界測資等），培養TC能力。</li><li>面對AI給出的設計建議時，可以舉出具體案例進行比較，或主動從不同設計方案分析利弊。</li><li>多練習於互動中自我檢查，比對自身理解與AI回饋有無落差，例如明確紀錄預期與實際行為。</li><li>可嘗試與AI進行共構，例如分工測試新情境、討論不同邏輯分層設計，促成更深層的協作學習。</li></ul>
+
+					<p>總評</p>
+					<pre>學生展現穩定的問題描述和需求澄清能力，但缺少深層驗證、方案比較與主動測試，互動以需求導向與表層修正為主，進一步的認知主動性與協作性尚待提升。</pre>
+				</div>
+			
+			互動紀錄: <div id="CHAT_LOG" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+						<div class="utterance-item">
+							<pre>public class Main {
+    public static void main(String[] args) {
+     ISubject subject = new PriceTracker( );
+     IObserver obs  = new Shopper ("Mary") ; 
+     subject.registerObserver( obs ) ;
+     ((PriceTracker)subject).setPrice(25); 
+	 //顯示 "Mary received update from PriceTracker. New Watermelon price:25"
+
+     subject.removeObserver( obs ) ; 
+  }
+}
+import java.util.ArrayList;
+import java.util.List;
+
+class PriceTracker implements ISubject{
+    private List<iobserver> shopperList = new ArrayList&lt;&gt;();
+    private int price;
+
+    @Override
+    public void setPrice(int price){
+        this.price = price;
+        notifyObservers();
+    }
+    
+    @Override
+    public void removeObserver(IObserver obs){
+        shopperList.remove(obs);
+    }
+    
+    @Override
+    public void registerObserver(IObserver obs){
+        shopperList.add(obs);
+    }
+
+    private void notifyObservers(){
+        for (IObserver o : shopperList) {
+            o.update(price);
+        }
+    }
+}
+class Shopper implements IObserver{
+    private String shopName;
+
+    public Shopper(String shopName){
+        this.shopName = shopName;
+    }
+
+    @Override
+    public void update(int price){
+        System.out.println(this.shopName + " received update from PriceTracker. New Watermelon price:" + price);
+    }
+
+    public String getShopName(){
+        return shopName;
+    }
+}
+
+interface IObserver {
+    void update(int price);
+}
+
+interface ISubject {
+    void registerObserver(IObserver obs);
+    void removeObserver(IObserver obs);
+    void setPrice(int price);
+}
+
+!@#$報告
+新設計有何優點?!@#$
+</iobserver></pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>目前這樣撰寫程式碼會有甚麼問題</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>目前這些進階問題應該不會影響題目要求的結果對吧?
+那我有什麼是需要修改符合題目要求的嗎</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>public class Main {
+    public static void main(String[] args) {
+     ISubject subject = new PriceTracker( );
+     IObserver obs  = new Shopper ("Mary") ; 
+     subject.registerObserver( obs ) ;
+     ((PriceTracker)subject).setPrice(25); 
+	 //顯示 "Mary received update from PriceTracker. New Watermelon price:25"
+
+     subject.removeObserver( obs ) ; 
+  }
+}
+import java.util.ArrayList;
+import java.util.List;
+
+class PriceTracker implements ISubject{
+    private List<iobserver> shopperList = new ArrayList&lt;&gt;();
+    private int price;
+
+    @Override
+    public void setPrice(int price){
+        this.price = price;
+        notifyObservers();
+    }
+    
+    @Override
+    public void removeObserver(IObserver obs){
+        shopperList.remove(obs);
+    }
+    
+    @Override
+    public void registerObserver(IObserver obs){
+        shopperList.add(obs);
+    }
+
+    private void notifyObservers(){
+        for (IObserver o : shopperList) {
+            o.update(price);
+        }
+    }
+}
+class Shopper implements IObserver{
+    private String shopName;
+
+    public Shopper(String shopName){
+        this.shopName = shopName;
+    }
+
+    @Override
+    public void update(int price){
+        System.out.println(this.shopName + " received update from PriceTracker. New Watermelon price:" + price);
+    }
+
+    public String getShopName(){
+        return shopName;
+    }
+}
+
+interface IObserver {
+    void update(int price);
+}
+
+interface ISubject {
+    void registerObserver(IObserver obs);
+    void removeObserver(IObserver obs);
+    void setPrice(int price);
+}
+
+!@#$報告
+新設計有何優點?
+本設計採用 Observer，將價格追蹤與通知處理分離。PriceTracker 只負責維護價格與廣播，Shopper 專注接收與呈現，降低耦合、提升可維護性。新增通知對象時只需擴充新的 Observer，不必修改既有主體邏輯，符合開放封閉原則。且可在執行期動態訂閱與取消，彈性高，適合電商即時價格通知情境。!@#$
+</iobserver></pre>
+							
+						</div>
+						<hr>
+					</div>
+		
+		
+	  </div>
+    </div>
+    <div id="area1" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+     問題描述: <br><div id="area1_code"> <div style="text-align:left">
+<p>假設有許多購物者(Shopper)關注PriceTracker回報的西瓜架構。<br>
+請檢視程式碼介面是否違反 Observer  模式，並撰寫報告，討論新設計有何優點?
+下面是程式碼的UML圖<br>
+ <a href="./AI學習系統_Observer Pattern_店商應用_files/UML1.png" target="_blank">
+ <img src="./AI學習系統_Observer Pattern_店商應用_files/UML1.png" style="width:300px; height:200px;"> </a>
+</p></div>
+修改使得：
+<pre style="width:500px; height:300px;"> 	  
+  public class Main {
+    public static void main(String[] args) {
+     ISubject subject = new PriceTracker( );
+     IObserver obs  = new Shopper ("Mary") ; 
+     subject.registerObserver( obs ) ;
+     ((PriceTracker)subject).setPrice(25); 
+	 //顯示 "Mary received update from PriceTracker. New Watermelon price:25"<br>
+     subject.removeObserver( obs ) ; 
+  }
+}
+</pre>
+ <br>
+ <br>
+
+<p></p>
+
+</div></div> <!-- not escapping HTML elements -->
+    
+	 
+    <div id="area2" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+     原始程式: <br><textarea id="area2_code" cols="150" rows="30">public class Main {
+   public static void main(String[] args) {
+        Shopper  p = new Shopper(new PriceTracker()  ) ; 
+        System.out.println( p.update() ) ;
+  }
+}
+public class PriceTracker {
+    private double price;
+    public void setPrice(double price ) {
+        this.price = price;
+        notifyShoppers();
+    }
+    public void notifyShoppers() {
+        System.out.println("Notifying notifyShoppers about price: " + price);
+    }
+}
+public class Shopper {
+    private PriceTracker pt;
+    public Shopper(PriceTracker pt) {
+        this.pt = pt;
+    }
+    public void update() {
+        System.out.println("Shopper received update. New Tprice : " + pt.getPrice());
+    }
+}
+!@#$報告
+新設計有何優點?!@#$
+</textarea>
+    </div>
+
+
+    <div id="area3" style=" margin:20px; padding:10px;width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+     你的程式碼: <br><textarea id="area3_code" cols="150" rows="30">public class Main {
+    public static void main(String[] args) {
+     ISubject subject = new PriceTracker( );
+     IObserver obs  = new Shopper ("Mary") ; 
+     subject.registerObserver( obs ) ;
+     ((PriceTracker)subject).setPrice(25); 
+	 //顯示 "Mary received update from PriceTracker. New Watermelon price:25"
+
+     subject.removeObserver( obs ) ; 
+  }
+}
+import java.util.ArrayList;
+import java.util.List;
+
+class PriceTracker implements ISubject{
+    private List&lt;IObserver&gt; shopperList = new ArrayList&lt;&gt;();
+    private int price;
+
+    @Override
+    public void setPrice(int price){
+        this.price = price;
+        notifyObservers();
+    }
+    
+    @Override
+    public void removeObserver(IObserver obs){
+        shopperList.remove(obs);
+    }
+    
+    @Override
+    public void registerObserver(IObserver obs){
+        shopperList.add(obs);
+    }
+
+    private void notifyObservers(){
+        for (IObserver o : shopperList) {
+            o.update(price);
+        }
+    }
+}
+class Shopper implements IObserver{
+    private String shopName;
+
+    public Shopper(String shopName){
+        this.shopName = shopName;
+    }
+
+    @Override
+    public void update(int price){
+        System.out.println(this.shopName + " received update from PriceTracker. New Watermelon price:" + price);
+    }
+
+    public String getShopName(){
+        return shopName;
+    }
+}
+
+interface IObserver {
+    void update(int price);
+}
+
+interface ISubject {
+    void registerObserver(IObserver obs);
+    void removeObserver(IObserver obs);
+    void setPrice(int price);
+}
+
+!@#$報告
+新設計有何優點?
+本設計採用 Observer，將價格追蹤與通知處理分離。PriceTracker 只負責維護價格與廣播，Shopper 專注接收與呈現，降低耦合、提升可維護性。新增通知對象時只需擴充新的 Observer，不必修改既有主體邏輯，符合開放封閉原則。且可在執行期動態訂閱與取消，彈性高，適合電商即時價格通知情境。!@#$
+</textarea>
+    </div>
+	
+	<script>
+		$(document).ready(function() {
+			function decodeHtmlEntities(str) {
+				return $('<textarea/>').html(str).text();
+			}
+
+			let problemHTML = $('#area1_code').html();
+			problemHTML = problemHTML.replace(/<br\s*\/?>/gi, '\n');
+			let problemText = $('<div>').html(problemHTML).text().trim();
+			$('#problem').val(problemText);
+
+			$('#src_codes').val(decodeHtmlEntities($('#area2_code').val()));
+			$('#codes').val(decodeHtmlEntities($('#area3_code').val()));
+		});
+		</script>
+
+
+</body></html>
