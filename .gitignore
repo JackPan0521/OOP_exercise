@@ -99,4 +99,7 @@ $RECYCLE.BIN/
 *.xls
 *.xlsx
 
+# file
+target/
+
 # End of https://www.toptal.com/developers/gitignore/api/java,visualstudiocode,windows
