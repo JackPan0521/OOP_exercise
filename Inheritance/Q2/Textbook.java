@@ -1,4 +1,5 @@
-package Q2;
+package Inheritance.Q2;
+
 
 public class Textbook extends Book {
     protected int edition;

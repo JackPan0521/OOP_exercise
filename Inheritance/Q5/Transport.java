@@ -1,4 +1,4 @@
-package Q5;
+package Inheritance.Q5;
 
 class Transport {
     protected String start, end;

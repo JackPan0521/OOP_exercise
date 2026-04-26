@@ -1,4 +1,4 @@
-package Q1;
+package Inheritance.Q1;
 
 public class ZooKeeper {
     public String name;

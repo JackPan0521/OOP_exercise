@@ -1,3 +1,5 @@
+package Quiz2.Question1;
+
 public class TaxCalculator {
     private TaxStrategy strategy;
 

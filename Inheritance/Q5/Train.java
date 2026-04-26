@@ -1,4 +1,4 @@
-package Q5;
+package Inheritance.Q5;
 
 class Train extends Transport {
     protected boolean isHighSpeed;

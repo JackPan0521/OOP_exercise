@@ -1,4 +1,4 @@
-package Q5;
+package Inheritance.Q5;
 
 public class Main {
     public static void main(String[] args) {

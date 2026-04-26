@@ -1,4 +1,4 @@
-package Q2;
+package Inheritance.Q2;
 
 public class Comic extends Book {
     protected int pageCount;

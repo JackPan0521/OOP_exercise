@@ -1,4 +1,4 @@
-package Q1;
+package MidExam.Q1;
 
 public class Event {
     public boolean checkEvent(Sample s1, Sample s2){

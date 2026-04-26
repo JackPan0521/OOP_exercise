@@ -1,4 +1,4 @@
-package Q4;
+package Inheritance.Q4;
 
 class Mage extends Character{
     protected int mp;

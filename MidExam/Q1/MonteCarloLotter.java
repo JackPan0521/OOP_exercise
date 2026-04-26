@@ -1,4 +1,4 @@
-package Q1;
+package MidExam.Q1;
 
 public class MonteCarloLotter {
     private Sampling sampling = new Sampling();

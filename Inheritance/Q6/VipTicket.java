@@ -1,4 +1,4 @@
-package Q6;
+package Inheritance.Q6;
 
 class VipTicket extends Ticket{
     public VipTicket(String id, double price){

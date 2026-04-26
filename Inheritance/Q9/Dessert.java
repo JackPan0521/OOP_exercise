@@ -1,4 +1,4 @@
-package Q9;
+package Inheritance.Q9;
 
 class Dessert extends Item{
     protected int calorie;

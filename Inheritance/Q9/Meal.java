@@ -1,4 +1,4 @@
-package Q9;
+package Inheritance.Q9;
 
 class Meal extends Item {
     protected String size;

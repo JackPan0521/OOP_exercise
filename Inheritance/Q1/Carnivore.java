@@ -1,4 +1,4 @@
-package Q1;
+package Inheritance.Q1;
 
 public class Carnivore extends Animal {
     public Carnivore(String name){

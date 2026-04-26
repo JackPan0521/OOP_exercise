@@ -1,4 +1,4 @@
-package Q4;
+package Inheritance.Q4;
 
 class Character {
     protected String name;

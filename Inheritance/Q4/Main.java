@@ -1,5 +1,4 @@
-package Q4;
-
+package Inheritance.Q4;
 public class Main {
     public static void main(String[] args) {
         Character w = new Warrior("Thor", 100, 20);

@@ -1,3 +1,5 @@
+package Quiz2.Question1;
+
 public class Sorter {
 public static void main(String[] args) {
     TaxCalculator p = new TaxCalculator( );

@@ -1,3 +1,5 @@
+package Quiz2.Question2;
+
 public class OldPaymentProcessor {
     private final OldPaymentSystem oldPaymentSystem;
 

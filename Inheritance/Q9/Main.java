@@ -1,4 +1,4 @@
-package Q9;
+package Inheritance.Q9;
 
 public class Main {
 public static void main(String[] args) {

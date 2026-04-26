@@ -1,3 +1,5 @@
+package HW5.Q3;
+
 public class Rectangle extends Shape {
     private int width, height;
 

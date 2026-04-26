@@ -1,4 +1,4 @@
-package Q4;
+package Inheritance.Q4;
 
 class Archer extends Character {
     public Archer(String name, int hp, int atk){

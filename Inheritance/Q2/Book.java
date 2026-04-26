@@ -1,4 +1,4 @@
-package Q2;
+package Inheritance.Q2;
 
 public class Book {
     protected String title, author;

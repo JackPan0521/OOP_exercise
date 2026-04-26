@@ -1,4 +1,4 @@
-package Q7;
+package Inheritance.Q7;
 
 class Dog extends Pet {
     protected double weight;

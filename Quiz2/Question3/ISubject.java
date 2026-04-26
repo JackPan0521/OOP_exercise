@@ -1,3 +1,5 @@
+package Quiz2.Question3;
+
 public interface ISubject {
     void registerObserver(IObserver observer);
 

@@ -1,3 +1,5 @@
+package Quiz2.Question3;
+
 public class WeatherDisplay implements IObserver {
     private final String location;
 

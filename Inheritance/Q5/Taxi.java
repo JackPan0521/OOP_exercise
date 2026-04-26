@@ -1,4 +1,4 @@
-package Q5;
+package Inheritance.Q5;
 
 class Taxi extends Transport {
     public Taxi(String start, String end, double distance){

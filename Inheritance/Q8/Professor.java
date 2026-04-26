@@ -1,4 +1,4 @@
-package Q8;
+package Inheritance.Q8;
 
 class Professor extends Staff{
     protected double allowance;

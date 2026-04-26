@@ -1,4 +1,4 @@
-package Q7;
+package Inheritance.Q7;
 
 class Cat extends Pet {
     public Cat(String name, double baseFee){

@@ -1,4 +1,4 @@
-package Q3;
+package MidExam.Q3;
 
 public class ConfigManager {
     public static ConfigManager instance;

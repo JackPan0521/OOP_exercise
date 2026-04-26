@@ -1,3 +1,5 @@
+package Quiz2.Question3;
+
 public class Main {
     public static void main(String[] args) {
         ISubject subject = new WeatherStation();

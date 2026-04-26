@@ -1,4 +1,4 @@
-package Q6;
+package Inheritance.Q6;
 
 class StudentTicket extends Ticket{
     public StudentTicket(String id, double price){

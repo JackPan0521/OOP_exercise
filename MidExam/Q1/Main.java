@@ -1,4 +1,4 @@
-package Q1;
+package MidExam.Q1;
 public class Main {
     public static void main(String[] args) {
         MonteCarloLotter monte = new MonteCarloLotter();

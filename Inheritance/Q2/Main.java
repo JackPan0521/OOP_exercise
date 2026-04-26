@@ -1,4 +1,5 @@
-package Q2;
+package Inheritance.Q2;
+
 
 public class Main {
     public static void main(String[] args) {

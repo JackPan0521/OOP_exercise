@@ -1,4 +1,4 @@
-package Q8;
+package Inheritance.Q8;
 
 class Person {
     protected String name;

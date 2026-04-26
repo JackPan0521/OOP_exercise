@@ -1,4 +1,4 @@
-package Q3;
+package Inheritance.Q3;
 
 public class SavingAccount extends Account {
 

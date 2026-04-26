@@ -1,4 +1,4 @@
-package Q8;
+package Inheritance.Q8;
 
 public class Main {
 public static void main(String[] args) {
