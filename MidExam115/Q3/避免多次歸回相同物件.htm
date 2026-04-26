@@ -1,0 +1,633 @@
+
+<!-- saved from url=(0042)http://120.125.80.92:8088/task_answer_test -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link href="./避免多次歸回相同物件_files/jquerysctipttop.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="./避免多次歸回相同物件_files/bootstrap.min.css">
+	<link rel="stylesheet" href="./避免多次歸回相同物件_files/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <link rel="stylesheet" href="./避免多次歸回相同物件_files/jquery.scrollbar.min.css">
+
+	<script src="./避免多次歸回相同物件_files/jquery-1.12.4.min.js.下載" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+	<script src="./避免多次歸回相同物件_files/bootstrap.min.js.下載"></script>
+    <script src="./避免多次歸回相同物件_files/jquery.scrollbar.min.js.下載"></script>
+<style>
+.right { 
+ color: green;   
+}
+.wrong {
+ color: red;   
+}
+#code {
+   overflow: auto;
+   }
+   * {
+  box-sizing: border-box;
+}
+
+/* Create two equal columns that floats next to each other */
+.column {
+  float: left;
+  width: 50%;
+  padding: 10px;
+  height: 100%; /* Should be removed. Only for demonstration */
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+li {
+  float: left;
+}
+
+</style>
+<script>
+ function autoCorrecting() {
+   document.getElementById("body").style.cursor = "progress";
+   var form = $("#chatGPT_frm");
+   var url = form.attr('action');
+   $('#chatGPT_area').css("display", "none");
+   $.ajax({
+           type: "POST",
+           url: url,
+           data: form.serialize(), // serializes the form's elements.
+           success: function(data)
+           {
+				dataString =  JSON.stringify(data, null, 2) ;
+				//alert("dataString:" + dataString);
+                
+				$('#backward').css("display", "block");
+				$('#chatGPT_area').css("display", "block");
+				
+			    $('#revision_state').text( "批改完畢" );
+				
+				$('#SCORE').html( data.分數.toString() ) ;
+				$('#RESULT').text("<pre>" + data.結果 + "</pre>");
+				$('#SUGGEST').text( "<pre>" + data.建議 + "</pre>") ;
+
+                //******************************************
+				const utterance_level = data?.互動評分?.utterance_level_results || [];
+				let chat_log = "";
+
+				if (utterance_level.length === 0) {
+					chat_log = "<p>No Chat LOg Data!</p>";
+				} else {
+					chat_log = utterance_level.map(item => `
+						<div class="utterance-item">
+							<pre>${item.utterance ?? ""}</pre>
+							
+						</div>
+						<hr>
+					`).join("");
+				}
+
+				// render
+				$('#CHAT_LOG').html(chat_log);
+				
+				
+				const summary = data?.互動評分?.session_level_summary;
+
+				if (!summary) {
+					$('#CHAT_RESULT').html("<p>No evaluation data available.</p>");
+					document.getElementById("body").style.cursor = "default";
+					return;
+				}
+				
+				// Overall score
+				$('#CHAT_SCORE').text(summary.overall_session_score ?? "");
+
+				// Interaction type/profile
+				$('#CHAT_TYPE').text(summary.interaction_profile ?? "");
+				
+				// Strengths + weaknesses + rationale
+				let resultHtml = `
+					<p>優點</p>
+					${arrayToList(summary.strengths)}
+
+					<p>缺點</p>
+					${arrayToList(summary.weaknesses)}
+
+				`;
+
+				$('#CHAT_RESULT').html(resultHtml);
+
+				// Suggestions + summary rationale
+				let suggestHtml = `
+					${arrayToList(summary.suggestions)}
+
+					<p>總評</p>
+					<pre>${escapeHtml(summary.summary_rationale ?? "")}</pre>
+				`;
+
+				$('#CHAT_SUGGEST').html(suggestHtml);
+				
+			   document.getElementById("body").style.cursor = "default";
+           }
+         });
+ }
+ 
+ function arrayToList(arr) {
+    if (!arr || !Array.isArray(arr) || arr.length === 0) {
+        return "<p>None</p>";
+    }
+    return "<ul><li>" + arr.map(item => escapeHtml(item)).join("</li><li>") + "</li></ul>";
+}
+
+function objectToPre(obj) {
+    if (!obj) return "<pre>{}</pre>";
+    return "<pre>" + escapeHtml(JSON.stringify(obj, null, 2)) + "</pre>";
+}
+
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+ function call_parent_function() {
+     if (window.opener && !window.opener.closed) {
+        window.opener.downloadUnits(); // Calls the function in the parent
+      } else {
+        alert("Parent window is not accessible.");
+      }
+	  window.close();
+ }
+
+
+
+</script>
+</head><body id="body" onload="autoCorrecting()" style="cursor: default;">
+
+  <!-- <div class="column"> -->
+    <div style=" margin:20px; padding:10px;width:100%; display:inline-block;">
+     <div id="revision_state">批改完畢</div> 
+	 <div id="backward" style="display: block; margin: 20px;"> <button style="margin-right:2px;margin-top:8px; " type="button" class="btn btn-primary" id="home" onclick="window.close();">回首頁</button>
+	 </div>
+	  <form id="chatGPT_frm" action="http://120.125.80.92:8088/chatGPT_autoCorrecting" method="POST">
+	    <input type="hidden" id="exam_id" name="exam_id" value="20250208_object_pool_2">
+		<input type="hidden" id="problem" name="problem" value="修改 ConnectionPool 類別，防止同一個物件被多次歸還，導致池內有重複物件。
+請檢視程式碼介面是否違反  Object Pool 模式，並撰寫報告，討論新設計有何優點?
+
+
+下面是程式碼的UML圖
+
+ 
+  
+
+修改 Main類別：
+public class Main {
+    public static void main(String[] args) {
+        ConnectionPool pool = new ConnectionPool(1);
+
+        Connection conn1 = pool.borrowConnection();
+        conn1.connect();
+
+        pool.returnConnection(conn1);
+
+        pool.returnConnection(conn1);
+
+    }
+}
+
+
+並修改其他程式，使得執行輸出：
+
+Connected successfully.
+
+
+Warning: This connection was not borrowed from the pool.">
+		<input type="hidden" id="src_codes" name="src_codes" value="">
+		<input type="hidden" id="codes" name="codes" value="package MidExam115.Q3;
+
+public class Connection {
+    public void connect(){
+        System.out.println(&quot;Connected successfully.&quot;);
+    }
+}
+
+package MidExam115.Q3;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public class ConnectionPool {
+    private List&lt;Connection&gt; pool;
+    private Set&lt;Connection&gt; borrowed;
+
+    public ConnectionPool(int size) {
+        pool = new ArrayList&lt;&gt;();
+        borrowed = new HashSet&lt;&gt;();
+        for (int i = 0; i &lt; size; i++) {
+            pool.add(new Connection());
+        }
+    }
+
+    public Connection borrowConnection() {
+        if (pool.isEmpty()) {
+            System.out.println(&quot;No available connections.&quot;);
+            return null;
+        }
+        Connection conn = pool.remove(pool.size() - 1);
+        borrowed.add(conn);
+        return conn;
+    }
+
+    public void returnConnection(Connection conn) {
+        if (!borrowed.contains(conn)) {
+            System.out.println(&quot;Warning: This connection was not borrowed from the pool.&quot;);
+            return;
+        }
+        borrowed.remove(conn);
+        pool.add(conn);
+    }
+}
+
+package MidExam115.Q3;
+
+public class Main {
+    public static void main(String[] args) {
+        ConnectionPool pool = new ConnectionPool(1);
+
+        Connection conn1 = pool.borrowConnection();
+        conn1.connect();
+
+        pool.returnConnection(conn1);
+
+        pool.returnConnection(conn1);
+
+    }
+}
+
+!@#$報告
+透過 `ConnectionPool` 預先建立固定數量的 `Connection` 物件並統一管理。`borrowConnection()` 從池中取出可用連線並記錄至 `borrowed` 集合；`returnConnection()` 歸還時會先驗證該連線是否確實來自池中，防止重複歸還或非法歸還。此設計避免頻繁建立與銷毀物件的效能消耗，適用於資料庫連線等建立成本高的資源管理場景，符合**資源重用**原則，有效提升系統效能與穩定性。!@#$
+">
+		
+		<!-- <input type="button" onClick="autoCorrecting()" value="重新批改" /> -->
+	  </form>
+	  <div id="chatGPT_area" style="color: blue; padding: 10px; width: 100%; display: block; overflow-y: scroll;">
+	     
+		    程式碼分數: <span id="SCORE">100</span><br>
+	
+		    批閱結果: <div id="RESULT" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">&lt;pre&gt;學生程式總體上完全正確，且高度符合物件導向Object Pool模式。
+
+錯誤個數：0。
+
+程式正確性評估：
+1. ConnectionPool設計使用pool記錄可用連線，使用borrowed集合記錄已借出的物件，可正確識別並防止連線物件重複歸還（即多次調用returnConnection同一物件時僅第一次有效，其後會輸出警告訊息，邏輯正確）。
+2. 介面清楚，未違反Object Pool模式的基本原則，物件分離管理。
+3. Main流程模擬測試行為和輸出皆正確，能顯示Connected successfully.與警告訊息。
+4. 沒有設計性缺陷或重大物件導向錯誤。
+
+報告部分：
+報告內容合理，明確說明本設計能防止重複歸還與非法歸還連線，滿足資源重用效率提升與穩定性，也提及Object Pool好處，無AI抄襲痕跡。
+
+綜合來說，無明顯錯誤，實作與說明皆佳。&lt;/pre&gt;</div>
+			 
+		    程式碼建議: <div id="SUGGEST" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">&lt;pre&gt;本程式已完善。進階建議可將set與list包裝為private final，以及考慮多執行緒環境下採用同步鎖定(synchronized)保護borrow和return邏輯，增加安全性。或於歸還時支援物件reset狀態以備下次重用。&lt;/pre&gt;</div>
+		
+		    互動分數 (滿分4分): <span id="CHAT_SCORE">2</span><br>
+	
+			互動類型: <div id="CHAT_TYPE" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">表層修正 (surface-refinement)</div>
+	
+		    批閱結果: <div id="CHAT_RESULT" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+					<p>優點</p>
+					<ul><li>能夠明確描述自己的需求與知識困難。</li><li>會將 AI 給予的知識應用到程式實作與報告產出。</li><li>願意持續追問設計細節，確認理解有前後連貫。</li></ul>
+
+					<p>缺點</p>
+					<ul><li>缺乏主動質疑、驗證、或檢查 AI 輸出正確性的行為。</li><li>較少比較不同設計選項，僅停留於單一路徑修正。</li><li>分析、檢討問題的深度有限，沒有明顯自我反思或策略調整。</li><li>未有明確的測試或驗證行為，也未主動探索錯誤或潛在缺陷。</li></ul>
+
+				</div>
+			 
+		    互動建議: <div id="CHAT_SUGGEST" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+					<ul><li>針對程式實作後，可以主動設定測試案例，驗證是否全數符合預期。</li><li>鼓勵主動提出假設或質疑，討論如果某些前提改變，設計還是否正確適用。</li><li>當不確定某個知識點時，可嘗試自行解釋再請 AI 幫忙檢查，提升深度學習效果。</li><li>多比較不同設計做法的優缺點，不要只接受單一解法。</li><li>在報告或討論時，主動反思自己學到什麼、有什麼限制、下一步怎麼調整。</li></ul>
+
+					<p>總評</p>
+					<pre>本次互動展現良好的問題定義、描述需求、設計步驟銜接能力，也會根據 AI 回饋修正程式與寫簡短說明。然而幾乎沒有對 AI 結果的質疑或驗證，對概念的追問也較基礎，缺少主動反思，問題解決策略大多沿用 AI 提示而未深究原理，整體互動仍屬表層修正格局。</pre>
+				</div>
+			
+			互動紀錄: <div id="CHAT_LOG" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+						<div class="utterance-item">
+							<pre>可以給我一提的UML嗎</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>所以我可以繼承connect達到pool策略嗎?</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>我對於物件池非常陌生可以先告訴我基本的物件池概念嗎</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>所以我會在物件池中建立兩個set分別作為借出以及未借出的池嗎</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>再重新給我一張UML圖，並且解釋類別中方框與圓心代表是什麼</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>package MidExam115.Q3;
+
+public class Connection {
+    public void connect(){
+        System.out.println("Connected successfully.");
+    }
+}
+
+package MidExam115.Q3;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public class ConnectionPool {
+    private List<connection> pool;
+    private Set<connection> borrowed;
+
+    public ConnectionPool(int size) {
+        pool = new ArrayList&lt;&gt;();
+        borrowed = new HashSet&lt;&gt;();
+        for (int i = 0; i &lt; size; i++) {
+            pool.add(new Connection());
+        }
+    }
+
+    public Connection borrowConnection() {
+        if (pool.isEmpty()) {
+            System.out.println("No available connections.");
+            return null;
+        }
+        Connection conn = pool.remove(pool.size() - 1);
+        borrowed.add(conn);
+        return conn;
+    }
+
+    public void returnConnection(Connection conn) {
+        if (!borrowed.contains(conn)) {
+            System.out.println("Warning: This connection was not borrowed from the pool.");
+            return;
+        }
+        borrowed.remove(conn);
+        pool.add(conn);
+    }
+}
+
+package MidExam115.Q3;
+
+public class Main {
+    public static void main(String[] args) {
+        ConnectionPool pool = new ConnectionPool(1);
+
+        Connection conn1 = pool.borrowConnection();
+        conn1.connect();
+
+        pool.returnConnection(conn1);
+
+        pool.returnConnection(conn1);
+
+    }
+}
+
+</connection></connection></pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>這是我目前寫出來的版本，需要做什麼樣的修改嗎?</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>package MidExam115.Q3;
+
+public class Connection {
+    public void connect(){
+        System.out.println("Connected successfully.");
+    }
+}
+
+package MidExam115.Q3;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public class ConnectionPool {
+    private List<connection> pool;
+    private Set<connection> borrowed;
+
+    public ConnectionPool(int size) {
+        pool = new ArrayList&lt;&gt;();
+        borrowed = new HashSet&lt;&gt;();
+        for (int i = 0; i &lt; size; i++) {
+            pool.add(new Connection());
+        }
+    }
+
+    public Connection borrowConnection() {
+        if (pool.isEmpty()) {
+            System.out.println("No available connections.");
+            return null;
+        }
+        Connection conn = pool.remove(pool.size() - 1);
+        borrowed.add(conn);
+        return conn;
+    }
+
+    public void returnConnection(Connection conn) {
+        if (!borrowed.contains(conn)) {
+            System.out.println("Warning: This connection was not borrowed from the pool.");
+            return;
+        }
+        borrowed.remove(conn);
+        pool.add(conn);
+    }
+}
+
+package MidExam115.Q3;
+
+public class Main {
+    public static void main(String[] args) {
+        ConnectionPool pool = new ConnectionPool(1);
+
+        Connection conn1 = pool.borrowConnection();
+        conn1.connect();
+
+        pool.returnConnection(conn1);
+
+        pool.returnConnection(conn1);
+
+    }
+}
+
+!@#$報告
+透過 `ConnectionPool` 預先建立固定數量的 `Connection` 物件並統一管理。`borrowConnection()` 從池中取出可用連線並記錄至 `borrowed` 集合；`returnConnection()` 歸還時會先驗證該連線是否確實來自池中，防止重複歸還或非法歸還。此設計避免頻繁建立與銷毀物件的效能消耗，適用於資料庫連線等建立成本高的資源管理場景，符合**資源重用**原則，有效提升系統效能與穩定性。!@#$
+</connection></connection></pre>
+							
+						</div>
+						<hr>
+					</div>
+		
+		
+	  </div>
+    </div>
+    <div id="area1" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+     問題描述: <br><div id="area1_code"> <div style="text-align:left">
+<p>修改 ConnectionPool 類別，防止同一個物件被多次歸還，導致池內有重複物件。</p>
+<p>請檢視程式碼介面是否違反  Object Pool 模式，並撰寫報告，討論新設計有何優點?<br>
+</p><div>
+下面是程式碼的UML圖<br>
+ <a href="./避免多次歸回相同物件_files/UML1.png" target="_blank">
+ <img src="./避免多次歸回相同物件_files/UML1.png" style="width:300px; height:200px;"> </a>
+</div>
+修改 Main類別：
+<pre style="width:500px; height:300px;">public class Main {
+    public static void main(String[] args) {
+        ConnectionPool pool = new ConnectionPool(1);
+
+        Connection conn1 = pool.borrowConnection();
+        conn1.connect();
+
+        pool.returnConnection(conn1);
+
+        pool.returnConnection(conn1);
+
+    }
+}
+</pre>
+
+並修改其他程式，使得執行輸出：<br>
+Connected successfully.<br>
+
+Warning: This connection was not borrowed from the pool.<br>
+
+
+
+ <br>
+
+<br>
+
+<p></p>
+
+</div></div> <!-- not escapping HTML elements -->
+    </div>
+	 
+    <div id="area2" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+     原始程式: <br><textarea id="area2_code" cols="150" rows="30"></textarea>
+    </div>
+
+
+    <div id="area3" style=" margin:20px; padding:10px;width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+     你的程式碼: <br><textarea id="area3_code" cols="150" rows="30">package MidExam115.Q3;
+
+public class Connection {
+    public void connect(){
+        System.out.println("Connected successfully.");
+    }
+}
+
+package MidExam115.Q3;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public class ConnectionPool {
+    private List&lt;Connection&gt; pool;
+    private Set&lt;Connection&gt; borrowed;
+
+    public ConnectionPool(int size) {
+        pool = new ArrayList&lt;&gt;();
+        borrowed = new HashSet&lt;&gt;();
+        for (int i = 0; i &lt; size; i++) {
+            pool.add(new Connection());
+        }
+    }
+
+    public Connection borrowConnection() {
+        if (pool.isEmpty()) {
+            System.out.println("No available connections.");
+            return null;
+        }
+        Connection conn = pool.remove(pool.size() - 1);
+        borrowed.add(conn);
+        return conn;
+    }
+
+    public void returnConnection(Connection conn) {
+        if (!borrowed.contains(conn)) {
+            System.out.println("Warning: This connection was not borrowed from the pool.");
+            return;
+        }
+        borrowed.remove(conn);
+        pool.add(conn);
+    }
+}
+
+package MidExam115.Q3;
+
+public class Main {
+    public static void main(String[] args) {
+        ConnectionPool pool = new ConnectionPool(1);
+
+        Connection conn1 = pool.borrowConnection();
+        conn1.connect();
+
+        pool.returnConnection(conn1);
+
+        pool.returnConnection(conn1);
+
+    }
+}
+
+!@#$報告
+透過 `ConnectionPool` 預先建立固定數量的 `Connection` 物件並統一管理。`borrowConnection()` 從池中取出可用連線並記錄至 `borrowed` 集合；`returnConnection()` 歸還時會先驗證該連線是否確實來自池中，防止重複歸還或非法歸還。此設計避免頻繁建立與銷毀物件的效能消耗，適用於資料庫連線等建立成本高的資源管理場景，符合**資源重用**原則，有效提升系統效能與穩定性。!@#$
+</textarea>
+    </div>
+	
+	<script>
+		$(document).ready(function() {
+			function decodeHtmlEntities(str) {
+				return $('<textarea/>').html(str).text();
+			}
+
+			let problemHTML = $('#area1_code').html();
+			problemHTML = problemHTML.replace(/<br\s*\/?>/gi, '\n');
+			let problemText = $('<div>').html(problemHTML).text().trim();
+			$('#problem').val(problemText);
+
+			$('#src_codes').val(decodeHtmlEntities($('#area2_code').val()));
+			$('#codes').val(decodeHtmlEntities($('#area3_code').val()));
+		});
+		</script>
+
+
+</body></html>
