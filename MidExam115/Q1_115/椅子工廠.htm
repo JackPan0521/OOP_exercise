@@ -1,0 +1,536 @@
+
+<!-- saved from url=(0042)http://120.125.80.92:8088/task_answer_test -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link href="./椅子工廠_files/jquerysctipttop.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="./椅子工廠_files/bootstrap.min.css">
+	<link rel="stylesheet" href="./椅子工廠_files/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+    <link rel="stylesheet" href="./椅子工廠_files/jquery.scrollbar.min.css">
+
+	<script src="./椅子工廠_files/jquery-1.12.4.min.js.下載" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+	<script src="./椅子工廠_files/bootstrap.min.js.下載"></script>
+    <script src="./椅子工廠_files/jquery.scrollbar.min.js.下載"></script>
+<style>
+.right { 
+ color: green;   
+}
+.wrong {
+ color: red;   
+}
+#code {
+   overflow: auto;
+   }
+   * {
+  box-sizing: border-box;
+}
+
+/* Create two equal columns that floats next to each other */
+.column {
+  float: left;
+  width: 50%;
+  padding: 10px;
+  height: 100%; /* Should be removed. Only for demonstration */
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+li {
+  float: left;
+}
+
+</style>
+<script>
+ function autoCorrecting() {
+   document.getElementById("body").style.cursor = "progress";
+   var form = $("#chatGPT_frm");
+   var url = form.attr('action');
+   $('#chatGPT_area').css("display", "none");
+   $.ajax({
+           type: "POST",
+           url: url,
+           data: form.serialize(), // serializes the form's elements.
+           success: function(data)
+           {
+				dataString =  JSON.stringify(data, null, 2) ;
+				//alert("dataString:" + dataString);
+                
+				$('#backward').css("display", "block");
+				$('#chatGPT_area').css("display", "block");
+				
+			    $('#revision_state').text( "批改完畢" );
+				
+				$('#SCORE').html( data.分數.toString() ) ;
+				$('#RESULT').text("<pre>" + data.結果 + "</pre>");
+				$('#SUGGEST').text( "<pre>" + data.建議 + "</pre>") ;
+
+                //******************************************
+				const utterance_level = data?.互動評分?.utterance_level_results || [];
+				let chat_log = "";
+
+				if (utterance_level.length === 0) {
+					chat_log = "<p>No Chat LOg Data!</p>";
+				} else {
+					chat_log = utterance_level.map(item => `
+						<div class="utterance-item">
+							<pre>${item.utterance ?? ""}</pre>
+							
+						</div>
+						<hr>
+					`).join("");
+				}
+
+				// render
+				$('#CHAT_LOG').html(chat_log);
+				
+				
+				const summary = data?.互動評分?.session_level_summary;
+
+				if (!summary) {
+					$('#CHAT_RESULT').html("<p>No evaluation data available.</p>");
+					document.getElementById("body").style.cursor = "default";
+					return;
+				}
+				
+				// Overall score
+				$('#CHAT_SCORE').text(summary.overall_session_score ?? "");
+
+				// Interaction type/profile
+				$('#CHAT_TYPE').text(summary.interaction_profile ?? "");
+				
+				// Strengths + weaknesses + rationale
+				let resultHtml = `
+					<p>優點</p>
+					${arrayToList(summary.strengths)}
+
+					<p>缺點</p>
+					${arrayToList(summary.weaknesses)}
+
+				`;
+
+				$('#CHAT_RESULT').html(resultHtml);
+
+				// Suggestions + summary rationale
+				let suggestHtml = `
+					${arrayToList(summary.suggestions)}
+
+					<p>總評</p>
+					<pre>${escapeHtml(summary.summary_rationale ?? "")}</pre>
+				`;
+
+				$('#CHAT_SUGGEST').html(suggestHtml);
+				
+			   document.getElementById("body").style.cursor = "default";
+           }
+         });
+ }
+ 
+ function arrayToList(arr) {
+    if (!arr || !Array.isArray(arr) || arr.length === 0) {
+        return "<p>None</p>";
+    }
+    return "<ul><li>" + arr.map(item => escapeHtml(item)).join("</li><li>") + "</li></ul>";
+}
+
+function objectToPre(obj) {
+    if (!obj) return "<pre>{}</pre>";
+    return "<pre>" + escapeHtml(JSON.stringify(obj, null, 2)) + "</pre>";
+}
+
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+ function call_parent_function() {
+     if (window.opener && !window.opener.closed) {
+        window.opener.downloadUnits(); // Calls the function in the parent
+      } else {
+        alert("Parent window is not accessible.");
+      }
+	  window.close();
+ }
+
+
+
+</script>
+</head><body id="body" onload="autoCorrecting()" style="cursor: default;">
+
+  <!-- <div class="column"> -->
+    <div style=" margin:20px; padding:10px;width:100%; display:inline-block;">
+     <div id="revision_state">批改完畢</div> 
+	 <div id="backward" style="display: block; margin: 20px;"> <button style="margin-right:2px;margin-top:8px; " type="button" class="btn btn-primary" id="home" onclick="window.close();">回首頁</button>
+	 </div>
+	  <form id="chatGPT_frm" action="http://120.125.80.92:8088/chatGPT_autoCorrecting" method="POST">
+	    <input type="hidden" id="exam_id" name="exam_id" value="20250208_abstract_factory_3">
+		<input type="hidden" id="problem" name="problem" value="請檢視程式碼介面是否違反 Abstract Factory  模式，並撰寫報告，討論新設計有何優點?
+
+
+下面是程式碼的UML圖
+
+    
+
+重新撰寫ChairClient類別
+
+public class ChairClient {
+    private Chair chair;
+
+    public ChairClient(ChairFactory factory) {
+        this.chair = factory.createChair();
+    }
+
+    public void useChair() {
+        chair.sitOn();
+    }
+}
+
+並修改程式，使得執行輸出：
+
+1.ChairClient os = new ChairClient(new  OfficeChairFactory() );
+
+os.useChair(); 
+
+2.ChairClient os = new ChairClient(new  GamingChairFactory() );
+
+os.useChair(); 
+
+
+
+
+
+輸出: 
+
+
+Sitting on Office Chair
+
+
+Sitting on Gaming Chair">
+		<input type="hidden" id="src_codes" name="src_codes" value="">
+		<input type="hidden" id="codes" name="codes" value="package MidExam115.Q1_115;
+
+public interface Chair {
+    void sitOn();
+}
+
+package MidExam115.Q1_115;
+
+public class ChairClient {
+    private Chair chair;
+
+    public ChairClient(ChairFactory factory) {
+        this.chair = factory.createChair();
+    }
+
+    public void useChair() {
+        chair.sitOn();
+    }
+}
+
+package MidExam115.Q1_115;
+
+public interface ChairFactory {
+    Chair createChair();
+}
+
+package MidExam115.Q1_115;
+
+public class GamingChair implements Chair{
+    public void sitOn(){
+        System.out.println(&quot;Sitting on Gaming Chair&quot;);
+    }
+}
+
+package MidExam115.Q1_115;
+
+public class GamingChairFactory implements ChairFactory{
+    public Chair createChair(){
+        GamingChair gamingChair = new GamingChair();
+        return gamingChair;
+    }
+}
+
+package MidExam115.Q1_115;
+
+public class Main {
+    public static void main(String[] args) {
+        ChairClient os = new ChairClient(new OfficeChairFactory() );
+        os.useChair();
+        os = new ChairClient(new GamingChairFactory() );
+        os.useChair();  
+    }
+}
+
+package MidExam115.Q1_115;
+
+public class OfficeChair implements Chair{
+    public void sitOn(){
+        System.out.println(&quot;Sitting on Office Chair&quot;);
+    }
+}
+
+package MidExam115.Q1_115;
+
+public class OfficeChairFactory implements ChairFactory{
+    public Chair createChair(){
+        OfficeChair officeChair = new OfficeChair();
+        return officeChair;
+    }
+}
+
+!@#$報告
+本程式採用 **Abstract Factory 模式**，透過 `ChairFactory` 介面與 `ChairClient` 的組合，實現客戶端與具體產品的完全解耦。`ChairClient` 僅依賴抽象介面，不知道 `OfficeChair` 或 `GamingChair` 的具體實作，符合**依賴反轉原則（DIP）**與**開放封閉原則（OCP）**。新增椅子種類時只需擴充新工廠與新產品類別，無需修改現有程式碼，大幅提升系統的可擴展性與可維護性。唯一缺點是對單一產品族略顯過度設計，類別數量較多，但整體架構清晰、責任分離明確，是良好的物件導向設計實踐。!@#$
+">
+		
+		<!-- <input type="button" onClick="autoCorrecting()" value="重新批改" /> -->
+	  </form>
+	  <div id="chatGPT_area" style="color: blue; padding: 10px; width: 100%; display: block; overflow-y: scroll;">
+	     
+		    程式碼分數: <span id="SCORE">98</span><br>
+	
+		    批閱結果: <div id="RESULT" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">&lt;pre&gt;本題要求檢查是否違反Abstract Factory模式，並要學生實作對應程式與撰寫設計優點的報告。
+
+一、程式碼檢查：程式正確運用了Abstract Factory模式，設計合理：
+1. 介面Chair, ChairFactory定義明確，抽象概念與操作清楚。
+2. OfficeChair/GamingChair 為產品實作，OfficeChairFactory/GamingChairFactory為對應的工廠，皆正確實作介面。
+3. ChairClient依賴工廠介面，實現了解耦。
+4. Main類測試示範了可產生不同的Chair產品，且輸出符合題目需求。
+
+本程式完全符合Abstract Factory模式定義，無違反。
+
+錯誤數：0
+
+二、報告內容：
+內容完整，明確說明了新設計的優點（解耦、符合DIP/OCP，擴展容易，結構清楚、責任分離），針對缺點也有討論。
+內容雖略為制式，但並未發現明顯AI抄襲痕跡（用語與你本身題目架構足夠切題）。
+
+三、總評
+本題內容邏輯正確，程式與報告皆佳，唯一小瑕疵可能是被要求"討論新設計的優點"字數或深入度可增加，但不影響主要評分。
+
+程式碼正確，報告充分解釋了設計優點。&lt;/pre&gt;</div>
+			 
+		    程式碼建議: <div id="SUGGEST" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">&lt;pre&gt;1. 若需優化，可於報告中對實際維護或產品族擴增的範例描述更深入。
+2. 評分可考慮程式碼註解增加解釋。
+3. 若考試需避免過於公式化，需再充分個人化報告內容，避免語句太過客觀形式。&lt;/pre&gt;</div>
+		
+		    互動分數 (滿分4分): <span id="CHAT_SCORE">2.83</span><br>
+	
+			互動類型: <div id="CHAT_TYPE" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">共同建構 (co-constructive)</div>
+	
+		    批閱結果: <div id="CHAT_RESULT" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+					<p>優點</p>
+					<ul><li>學生善於自我反思、評價設計成果，以及主動提出批判性比較問題。</li><li>能和 AI 形成明確脈絡的討論回合，針對抽象工廠的優缺點、實作與學習困難進行深入互動。</li></ul>
+
+					<p>缺點</p>
+					<ul><li>缺乏對 AI 結論/程式的主動驗證、實際測試和針對性質疑。</li><li>程式面向多為結構性檢查與設計原則討論，較少細節驗證或錯誤追蹤。</li><li>多數互動雖有認知深度，但針對 tc（信任/驗證）面仍明顯不足。</li></ul>
+
+				</div>
+			 
+		    互動建議: <div id="CHAT_SUGGEST" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+					<ul><li>可將 AI 給的觀念或程式實際運行測試，並主動回報結果以擴展驗證層次。</li><li>在理解和批判設計模式後，可挑戰自己提出具體測試案例，檢查程式是否真如預期工作，以培養信任調節與 debug 能力。</li><li>多練習對比「錯誤/不良設計」和「良好設計」，並記錄帶來的程式行為差異和後續維護難易。</li></ul>
+
+					<p>總評</p>
+					<pre>本次互動整體展現高水平的問題意識、自我反思及協同建構歷程，特別在設計模式優缺點比較、困難處探索、設計概念總結方面有清楚證據。然而，幾乎沒有針對 AI 回應做明確的驗證、測試或主動質疑程式正確性，因此 TC（信任調節）維持低分。可歸類為共同建構取向，但還未達到高主體驗證/高 agency 階段。</pre>
+				</div>
+			
+			互動紀錄: <div id="CHAT_LOG" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+						<div class="utterance-item">
+							<pre>目前我想要學習抽象工廠的方式，但我目前沒有任何想法，可以教我簡單的需求是什麼嗎</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>目前這是我寫的內容，有符合抽象工廠的樣子嗎?我有甚麼可以做改進的</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>我比較偏好使用自己的IDE，所以在過程中會比較少在這邊做更改</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>透過這邊的UML我確實能夠更清楚的知道我要做什麼</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>如果修改成這種策略方式與之前的直接new物件，除了差別在client端不需要知道工廠內部的製造方法外還有甚麼樣的優點及缺點?</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>對於一些新接觸這種策略方式的新手來說，我就只是在建造一些重複的事情，一開始會想說這些都是層層疊加而已沒什麼用處，我可以用甚麼方式去理解</pre>
+							
+						</div>
+						<hr>
+					
+						<div class="utterance-item">
+							<pre>package MidExam115.Q1_115; ... !@#$報告
+本程式採用 **Abstract Factory 模式**，透過 `ChairFactory` 介面與 `ChairClient` 的組合，實現客戶端與具體產品的完全解耦。`ChairClient` 僅依賴抽象介面，不知道 `OfficeChair` 或 `GamingChair` 的具體實作，符合**依賴反轉原則（DIP）**與**開放封閉原則（OCP）**。新增椅子種類時只需擴充新工廠與新產品類別，無需修改現有程式碼，大幅提升系統的可擴展性與可維護性。唯一缺點是對單一產品族略顯過度設計，類別數量較多，但整體架構清晰、責任分離明確，是良好的物件導向設計實踐。!@#$</pre>
+							
+						</div>
+						<hr>
+					</div>
+		
+		
+	  </div>
+    </div>
+    <div id="area1" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+     問題描述: <br><div id="area1_code"> <div style="text-align:left">
+<p>請檢視程式碼介面是否違反 Abstract Factory  模式，並撰寫報告，討論新設計有何優點?<br>
+</p><div>
+下面是程式碼的UML圖<br>
+<a href="./椅子工廠_files/UML1.png" target="_blank">   <img src="./椅子工廠_files/UML1.png" style="width:300px; height:200px;"> </a>
+</div>
+重新撰寫ChairClient類別<br>
+<pre style="width:500px; height:300px;">public class ChairClient {
+    private Chair chair;
+
+    public ChairClient(ChairFactory factory) {
+        this.chair = factory.createChair();
+    }
+
+    public void useChair() {
+        chair.sitOn();
+    }
+}</pre>
+
+並修改程式，使得執行輸出：<br>
+1.ChairClient os = new ChairClient(new  OfficeChairFactory() );<br>
+os.useChair(); <br>
+2.ChairClient os = new ChairClient(new  GamingChairFactory() );<br>
+os.useChair(); <br>
+<br>
+
+
+輸出: <br>
+
+Sitting on Office Chair<br>
+
+Sitting on Gaming Chair <br>
+
+<br>
+<br>
+
+<p></p>
+
+</div></div> <!-- not escapping HTML elements -->
+    </div>
+	 
+    <div id="area2" style="margin:20px; padding:10px; width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+     原始程式: <br><textarea id="area2_code" cols="150" rows="30"></textarea>
+    </div>
+
+
+    <div id="area3" style=" margin:20px; padding:10px;width:100%; display:inline-block;overflow-y: scroll; border: 2px solid black; ">
+     你的程式碼: <br><textarea id="area3_code" cols="150" rows="30">package MidExam115.Q1_115;
+
+public interface Chair {
+    void sitOn();
+}
+
+package MidExam115.Q1_115;
+
+public class ChairClient {
+    private Chair chair;
+
+    public ChairClient(ChairFactory factory) {
+        this.chair = factory.createChair();
+    }
+
+    public void useChair() {
+        chair.sitOn();
+    }
+}
+
+package MidExam115.Q1_115;
+
+public interface ChairFactory {
+    Chair createChair();
+}
+
+package MidExam115.Q1_115;
+
+public class GamingChair implements Chair{
+    public void sitOn(){
+        System.out.println("Sitting on Gaming Chair");
+    }
+}
+
+package MidExam115.Q1_115;
+
+public class GamingChairFactory implements ChairFactory{
+    public Chair createChair(){
+        GamingChair gamingChair = new GamingChair();
+        return gamingChair;
+    }
+}
+
+package MidExam115.Q1_115;
+
+public class Main {
+    public static void main(String[] args) {
+        ChairClient os = new ChairClient(new OfficeChairFactory() );
+        os.useChair();
+        os = new ChairClient(new GamingChairFactory() );
+        os.useChair();  
+    }
+}
+
+package MidExam115.Q1_115;
+
+public class OfficeChair implements Chair{
+    public void sitOn(){
+        System.out.println("Sitting on Office Chair");
+    }
+}
+
+package MidExam115.Q1_115;
+
+public class OfficeChairFactory implements ChairFactory{
+    public Chair createChair(){
+        OfficeChair officeChair = new OfficeChair();
+        return officeChair;
+    }
+}
+
+!@#$報告
+本程式採用 **Abstract Factory 模式**，透過 `ChairFactory` 介面與 `ChairClient` 的組合，實現客戶端與具體產品的完全解耦。`ChairClient` 僅依賴抽象介面，不知道 `OfficeChair` 或 `GamingChair` 的具體實作，符合**依賴反轉原則（DIP）**與**開放封閉原則（OCP）**。新增椅子種類時只需擴充新工廠與新產品類別，無需修改現有程式碼，大幅提升系統的可擴展性與可維護性。唯一缺點是對單一產品族略顯過度設計，類別數量較多，但整體架構清晰、責任分離明確，是良好的物件導向設計實踐。!@#$
+</textarea>
+    </div>
+	
+	<script>
+		$(document).ready(function() {
+			function decodeHtmlEntities(str) {
+				return $('<textarea/>').html(str).text();
+			}
+
+			let problemHTML = $('#area1_code').html();
+			problemHTML = problemHTML.replace(/<br\s*\/?>/gi, '\n');
+			let problemText = $('<div>').html(problemHTML).text().trim();
+			$('#problem').val(problemText);
+
+			$('#src_codes').val(decodeHtmlEntities($('#area2_code').val()));
+			$('#codes').val(decodeHtmlEntities($('#area3_code').val()));
+		});
+		</script>
+
+
+</body></html>
