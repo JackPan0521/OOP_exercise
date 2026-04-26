@@ -1,4 +1,4 @@
-package MidExam.Q1;
+package MidExam114.Q1;
 import java.util.Set;
 
 public class Sample {

@@ -1,4 +1,4 @@
-package MidExam.Q3;
+package MidExam114.Q3;
 
 public class ConfigTest {
 public static void main(String[] args) {

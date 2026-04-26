@@ -1,4 +1,4 @@
-package MidExam.Q1;
+package MidExam114.Q1;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
