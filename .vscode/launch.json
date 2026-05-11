@@ -5,6 +5,13 @@
       "type": "java",
       "name": "Main",
       "request": "launch",
+      "mainClass": "Template.Q1.Main",
+      "projectName": "Homework_ae483d57"
+    },
+    {
+      "type": "java",
+      "name": "Main",
+      "request": "launch",
       "mainClass": "MidExam115.Q1_115.Main",
       "projectName": "Homework_ae483d57"
     },
