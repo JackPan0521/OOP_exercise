@@ -5,6 +5,13 @@
       "type": "java",
       "name": "Main",
       "request": "launch",
+      "mainClass": "GenericsPrototype.Q3.Main",
+      "projectName": "Homework_ae483d57"
+    },
+    {
+      "type": "java",
+      "name": "Main",
+      "request": "launch",
       "mainClass": "Template.Q3.Main",
       "projectName": "Homework_ae483d57"
     },
