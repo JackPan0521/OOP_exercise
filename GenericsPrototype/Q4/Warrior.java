@@ -1,13 +1,20 @@
 package GenericsPrototype.Q4;
 
 public class Warrior implements Cloneable {
-    String name;
-    int hp,attack;
+    private String name;
+    private int hp,attack;
+    private static Warrior prototype;
 
-    public Warrior(String name,int hp, int attack){
+    private Warrior(String name,int hp, int attack){
         this.attack = attack;
         this.hp = hp;
         this.name = name;
+    }
+
+    public static Warrior getPrototype(String name, int hp, int attack){
+        if(prototype==null)
+            return new Warrior(name, hp, attack);
+        return prototype;
     }
 
     public void setName(String name){
