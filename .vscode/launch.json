@@ -5,6 +5,27 @@
       "type": "java",
       "name": "Main",
       "request": "launch",
+      "mainClass": "GenericsPrototype.Q5.Main",
+      "projectName": "OOP_exercise_144233e2"
+    },
+    {
+      "type": "java",
+      "name": "Main",
+      "request": "launch",
+      "mainClass": "GenericsPrototype.Q7.Main",
+      "projectName": "OOP_exercise_144233e2"
+    },
+    {
+      "type": "java",
+      "name": "Main",
+      "request": "launch",
+      "mainClass": "GenericsPrototype.Q6.Main",
+      "projectName": "OOP_exercise_144233e2"
+    },
+    {
+      "type": "java",
+      "name": "Main",
+      "request": "launch",
       "mainClass": "GenericsPrototype.Q6.Main",
       "projectName": "Homework_ae483d57"
     },
