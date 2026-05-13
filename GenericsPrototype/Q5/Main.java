@@ -3,7 +3,7 @@ package GenericsPrototype.Q5;
 public class Main {
     public static void main(String[] args) {
         try {
-            Sword baseSword = new Sword("Iron Sword", 30);
+            Sword baseSword = Sword.getPrototype("Iron Sword", 30);
 
             Sword s1 = (Sword) baseSword.copy();
             s1.setType("Player Sword");

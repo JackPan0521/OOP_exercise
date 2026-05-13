@@ -3,10 +3,17 @@ package GenericsPrototype.Q5;
 public class Sword implements Cloneable{
     private String type;
     private int damage;
+    private static Sword prototype;
 
-    public Sword(String type, int damage){
+    private Sword(String type, int damage){
         this.damage = damage;
         this.type = type;
+    }
+
+    public static Sword getPrototype(String type, int damage){
+        if(prototype==null)
+            return new Sword(type, damage);
+        return prototype;
     }
     
     public void setType(String type){
