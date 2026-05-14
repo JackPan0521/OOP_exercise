@@ -5,6 +5,13 @@
       "type": "java",
       "name": "Main",
       "request": "launch",
+      "mainClass": "GenericsPrototype.Q14.Main",
+      "projectName": "OOP_exercise_144233e2"
+    },
+    {
+      "type": "java",
+      "name": "Main",
+      "request": "launch",
       "mainClass": "GenericsPrototype.Q5.Main",
       "projectName": "OOP_exercise_144233e2"
     },
