@@ -3,6 +3,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "HashMapExample",
+      "request": "launch",
+      "mainClass": "GenericsPrototype.Q8.HashMapExample",
+      "projectName": "OOP_exercise_144233e2"
+    },
+    {
+      "type": "java",
       "name": "Main",
       "request": "launch",
       "mainClass": "GenericsPrototype.Q14.Main",
