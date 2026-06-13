@@ -6,9 +6,10 @@ public class SqlQueryBuilder{
     private String table,condition,order;
     private List<String> columns = new ArrayList<>();
 
-    public SqlQueryBuilder select(String columns1, String columns2){
-        columns.add(columns1);
-        columns.add(columns2);
+    public SqlQueryBuilder select(String... column){
+        for (String col : column) {
+            columns.add(col);
+        }
         return this;
     }
 
@@ -31,14 +32,21 @@ public class SqlQueryBuilder{
         String s;
         //SELECT
         s = "SELECT ";
-        for(String i:columns) s+=(i+" ");
+        for(int i=0; i<columns.size(); i++){
+            if(i!=columns.size()-1)
+                s +=columns.get(i)+", ";
+            else
+                s +=columns.get(i)+" ";
+        }
         //FROM
         s +="FROM "+table;
         //WHERE
-        s +=" WHERE "+condition;
+        if(condition!=null)
+            s +=" WHERE "+condition;
         //ORDER
-        s +=" ORDER BY "+order;
+        if(order!=null)
+            s +=" ORDER BY  "+order;
         
-        return s;
+        return s+";";
     }
 }
